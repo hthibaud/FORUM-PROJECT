@@ -34,7 +34,30 @@
 }
 
 [data-theme="light"] {
-    --bg-base:var(--accent-primary)
+
+    /* Pour les titres */
+    --font-display: 'Philosopher', sans-serif;
+    
+    /* Pour les textes courants et posts (paragraphes, listes, boutons) */
+    --font-sans: 'Roboto', system-ui, -apple-system, sans-serif;
+
+    --bg-base: #c7c7c7;
+    --bg-surface: #ccbfef;
+    --bg-surface-hover: #9d90c2;
+        /* Typographie */
+    --text-main: #ededf0;
+    --text-muted: #8f8f9d;
+
+    /* Accents (Cyan / Violet) */
+    --accent-primary: #88b7bb;
+    --accent-secondary: #624c76;
+
+        /* Variables de Layout */
+    --container-max: 1200px;
+    --space-sm: 0.5rem;
+    --space-md: 1.5rem;
+    --space-lg: 3rem;
+
 }
 
 /* =========================================
