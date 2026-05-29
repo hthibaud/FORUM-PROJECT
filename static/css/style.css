@@ -15,7 +15,7 @@
     --bg-surface: #2a3847;
     --bg-surface-hover: #446383;
     --bg-panel: #5a6a7f;       /* Bleu-gris pour les cartes ou sections secondaires */
-    --bg-deep: #0a1c12;        /* Vert très sombre pour les pieds de page ou contrastes */
+    --bg-deep: #323a52;        /* Bleu-gris sombre pour les pieds de page ou contrastes */
 
     /* Typographie */
     --text-main: #ededf0;
@@ -23,7 +23,7 @@
 
     /* Accents (Cyan / Violet) */
     --accent-primary: #88b7bb;
-    --accent-secondary: #a38fbd; /* Violet plus clair pour le dark mode */
+    --accent-secondary: #bca6d9; /* Violet plus clair pour le dark mode */
     
     /* Variables de Layout */
     --container-max: 1200px;
