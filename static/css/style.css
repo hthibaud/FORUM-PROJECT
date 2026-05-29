@@ -1,10 +1,9 @@
-/* =========================================
+@import url('https://fonts.googleapis.com/css2?family=Philosopher:ital,wght@0,400;0,700;1,400;1,700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+    /* =========================================
    1. VARIABLES & THEME
    ========================================= */
 :root {
-
-     @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Philosopher:ital,wght@0,400;0,700;1,400;1,700&family=Science+Gothic:wght@100..900&display=swap');
-     @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Philosopher:ital,wght@0,400;0,700;1,400;1,700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Science+Gothic:wght@100..900&display=swap');
 
     /* Pour les titres */
     --font-display: 'Philosopher', sans-serif;
@@ -16,15 +15,15 @@
     --bg-surface: #2a3847;
     --bg-surface-hover: #446383;
     --bg-panel: #5a6a7f;       /* Bleu-gris pour les cartes ou sections secondaires */
-    --bg-deep: #1a2f23;        /* Vert très sombre pour les pieds de page ou contrastes */
+    --bg-deep: #0a1c12;        /* Vert très sombre pour les pieds de page ou contrastes */
 
     /* Typographie */
     --text-main: #ededf0;
     --text-muted: #8f8f9d;
 
     /* Accents (Cyan / Violet) */
-    --accent-primary: #00f0ff;
-    --accent-secondary: #8a2be2;
+    --accent-primary: #88b7bb;
+    --accent-secondary: #624c76;
     
     /* Variables de Layout */
     --container-max: 1200px;
@@ -74,32 +73,137 @@ html {
 }
 
 body {
-    background-color: var(--bg-base);
-    color: var(--text-main);
-    font-family: var(--font-sans);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+            font-family: var(--font-sans);
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
 
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
+        /* --- TYPOGRAPHIE --- */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: var(--space-md);
+        }
 
-/* Typographie de base */
-h1, h2, h3, h4 {
-    line-height: 1.2;
-    font-weight: 700;
-    margin-bottom: var(--space-md);
-}
+        h1 { font-size: 3rem; color: var(--text-main); }
+        h2 { font-size: 2.2rem; color: var(--accent-primary); }
+        h3 { font-size: 1.5rem; }
 
-a {
-    color: var(--accent-primary);
-    text-decoration: none;
-    transition: color 0.2s ease, text-shadow 0.2s ease;
-}
+        p { margin-bottom: var(--space-md); color: var(--text-muted); }
+        
+        a {
+            color: var(--accent-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        a:hover { color: var(--accent-primary); }
 
-a:hover {
-    color: var(--accent-secondary);
+        /* --- LAYOUT --- */
+        .container {
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding: 0 var(--space-md);
+        }
 
-    text-decoration: none;
-    color: inherit;
-}
+        section {
+            padding: var(--space-lg) 0;
+        }
+
+        /* --- COMPOSANTS --- */
+        
+        /* Header */
+        header {
+            background-color: var(--bg-surface);
+            padding: var(--space-md) 0;
+            /*border-bottom: 2px solid var(--accent-primary);*/
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: var(--space-md);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: calc(var(--space-lg) * 2) 0;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--accent-primary);
+            color: var(--bg-base);
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.2s, background-color 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-secondary);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--accent-secondary);
+            color: var(--accent-secondary);
+            margin-left: var(--space-sm);
+        }
+        .btn-outline:hover {
+            background-color: var(--accent-secondary);
+            color: #fff;
+        }
+
+        /* Cards Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+
+        .card {
+            background-color: var(--bg-surface);
+            padding: var(--space-md);
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .card:hover {
+            background-color: var(--bg-surface-hover);
+            transform: translateY(-5px);
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .card h3 { color: var(--text-main); }
+
+        /* Code Block */
+        .code-block {
+            background-color: var(--bg-deep);
+            padding: var(--space-md);
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--accent-primary);
+            overflow-x: auto;
+            border: 1px solid var(--bg-panel);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-surface);
+            padding: var(--space-lg) 0;
+            text-align: center;
+            margin-top: var(--space-lg);
+            border-top: 1px solid var(--bg-panel);
+        }

@@ -8,3 +8,6 @@ import (
 func home(w http.ResponseWriter, r *http.Request) {
 	utils.RenderFile("Forum Accueil", utils.Render("index", nil), w)
 }
+func demo(w http.ResponseWriter, r *http.Request) {
+	utils.RenderFile("Forum Demo", utils.Render("demo", nil), w)
+}
