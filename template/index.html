@@ -1,4 +1,50 @@
 <main>
-    <h1>Bienvenue</h1>
-    <h6>Vous allez voir c'est trop bien !</h6>
+    <section class="hero container">
+        <h1>Bienvenue sur le Forum</h1>
+        <p>Rejoignez la discussion, partagez vos connaissances et trouvez des réponses.</p>
+        <div>
+            <a href="/register" class="btn">S'inscrire</a>
+            <a href="/login" class="btn btn-outline">Se connecter</a>
+        </div>
+    </section>
+
+    <section class="container">
+        <h2>Catégories</h2>
+        <div class="grid">
+            <a href="/category/general" class="card" style="text-decoration: none;">
+                <h3>Général</h3>
+                <p>Discussions générales et sujets divers.</p>
+            </a>
+            <a href="/category/aide" class="card" style="text-decoration: none;">
+                <h3>Aide & Support</h3>
+                <p>Posez vos questions et obtenez de l'aide de la communauté.</p>
+            </a>
+            <a href="/category/dev" class="card" style="text-decoration: none;">
+                <h3>Développement</h3>
+                <p>Programmation, projets et partage de code.</p>
+            </a>
+            <a href="/category/annonces" class="card" style="text-decoration: none;">
+                <h3>Annonces</h3>
+                <p>Les dernières nouveautés et règles du forum.</p>
+            </a>
+        </div>
+    </section>
+
+    <section class="container">
+        <h2>Discussions Récentes</h2>
+        <div class="grid">
+            <div class="card">
+                <h3><a href="/topic/1">Comment bien débuter avec Go ?</a></h3>
+                <p>Par <strong>Gopher</strong> - Il y a 2 heures</p>
+            </div>
+            <div class="card">
+                <h3><a href="/topic/2">Partagez vos meilleurs setups !</a></h3>
+                <p>Par <strong>TechLover</strong> - Il y a 4 heures</p>
+            </div>
+            <div class="card">
+                <h3><a href="/topic/3">Problème de base de données sqlite3</a></h3>
+                <p>Par <strong>DevJunior</strong> - Il y a 1 jour</p>
+            </div>
+        </div>
+    </section>
 </main>
