@@ -26,6 +26,10 @@
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
+[data-theme="light"] {
+    --bg-base:var(--accent-primary)
+}
+
 /* =========================================
    RESET
    ========================================= */
@@ -39,12 +43,6 @@
 * {
     margin: 0;
     padding: 0;
-}
-
-/* 3. Comportement fluide du body */
-body {
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased; /* Rend la typographie bien plus nette sur les écrans modernes */
 }
 
 /* 4. Les médias (images, vidéos) sont responsives par défaut et ne débordent plus de leur conteneur */
@@ -74,6 +72,8 @@ body {
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Typographie de base */
