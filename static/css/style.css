@@ -32,9 +32,6 @@
     --space-md: 1.5rem;
     --space-lg: 3rem;
 
-    /* Fonts */
-    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
 [data-theme="light"] {
