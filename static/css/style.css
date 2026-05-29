@@ -1,0 +1,97 @@
+/* =========================================
+   1. VARIABLES & THEME
+   ========================================= */
+:root {
+    /* Couleurs de fond et surfaces (Tech-Noir) */
+    --bg-base: #09090b;
+    --bg-surface: #121214;
+    --bg-surface-hover: #1c1c1f;
+
+    /* Typographie */
+    --text-main: #ededf0;
+    --text-muted: #8f8f9d;
+
+    /* Accents (Cyan / Violet) */
+    --accent-primary: #00f0ff;
+    --accent-secondary: #8a2be2;
+    
+    /* Variables de Layout */
+    --container-max: 1200px;
+    --space-sm: 0.5rem;
+    --space-md: 1.5rem;
+    --space-lg: 3rem;
+
+    /* Fonts */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* =========================================
+   RESET
+   ========================================= */
+
+/* 1. Modèle de boîte prévisible sur tout le document */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* 2. Suppression des marges intérieures/extérieures par défaut */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+/* 3. Comportement fluide du body */
+body {
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased; /* Rend la typographie bien plus nette sur les écrans modernes */
+}
+
+/* 4. Les médias (images, vidéos) sont responsives par défaut et ne débordent plus de leur conteneur */
+img, picture, video, canvas, svg {
+    display: block;
+    max-width: 100%;
+}
+
+/* 5. Les champs de formulaires héritent de la typographie du body (par défaut ils ont leur propre police affreuse) */
+input, button, textarea, select {
+    font: inherit;
+}
+
+/* 6. Évite les retours à la ligne qui cassent le design si un mot est trop long (ex: une longue URL) */
+p, h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: break-word;
+}
+
+html {
+    font-size: 100%;
+}
+
+body {
+    background-color: var(--bg-base);
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typographie de base */
+h1, h2, h3, h4 {
+    line-height: 1.2;
+    font-weight: 700;
+    margin-bottom: var(--space-md);
+}
+
+a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+a:hover {
+    color: var(--accent-secondary);
+
+    text-decoration: none;
+    color: inherit;
+}
