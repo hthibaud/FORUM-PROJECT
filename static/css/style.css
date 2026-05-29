@@ -2,10 +2,21 @@
    1. VARIABLES & THEME
    ========================================= */
 :root {
-    /* Couleurs de fond et surfaces (Tech-Noir) */
-    --bg-base: #09090b;
-    --bg-surface: #121214;
-    --bg-surface-hover: #1c1c1f;
+
+     @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Philosopher:ital,wght@0,400;0,700;1,400;1,700&family=Science+Gothic:wght@100..900&display=swap');
+     @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Philosopher:ital,wght@0,400;0,700;1,400;1,700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Science+Gothic:wght@100..900&display=swap');
+
+    /* Pour les titres */
+    --font-display: 'Philosopher', sans-serif;
+    
+    /* Pour les textes courants et posts (paragraphes, listes, boutons) */
+    --font-sans: 'Roboto', system-ui, -apple-system, sans-serif;
+    
+    --bg-base: #191523;
+    --bg-surface: #2a3847;
+    --bg-surface-hover: #446383;
+    --bg-panel: #5a6a7f;       /* Bleu-gris pour les cartes ou sections secondaires */
+    --bg-deep: #1a2f23;        /* Vert très sombre pour les pieds de page ou contrastes */
 
     /* Typographie */
     --text-main: #ededf0;
