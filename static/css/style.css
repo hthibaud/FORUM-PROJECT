@@ -23,7 +23,7 @@
 
     /* Accents (Cyan / Violet) */
     --accent-primary: #88b7bb;
-    --accent-secondary: #624c76;
+    --accent-secondary: #a38fbd; /* Violet plus clair pour le dark mode */
     
     /* Variables de Layout */
     --container-max: 1200px;
@@ -31,33 +31,30 @@
     --space-md: 1.5rem;
     --space-lg: 3rem;
 
+    /* Ombres et arrondis (Design System) */
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 8px 15px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.4);
+
 }
 
 [data-theme="light"] {
+    /* Couleurs de fond plus claires */
+    --bg-base: #f4f5f7;
+    --bg-surface: #ffffff;
+    --bg-surface-hover: #eaeaea;
+    --bg-panel: #dcdcdc;
+    --bg-deep: #cacaca;
 
-    /* Pour les titres */
-    --font-display: 'Philosopher', sans-serif;
-    
-    /* Pour les textes courants et posts (paragraphes, listes, boutons) */
-    --font-sans: 'Roboto', system-ui, -apple-system, sans-serif;
+    /* Typographie : Texte sombre pour contraster avec le fond clair */
+    --text-main: #191523;
+    --text-muted: #5a6a7f;
 
-    --bg-base: #c7c7c7;
-    --bg-surface: #ccbfef;
-    --bg-surface-hover: #9d90c2;
-        /* Typographie */
-    --text-main: #ededf0;
-    --text-muted: #8f8f9d;
-
-    /* Accents (Cyan / Violet) */
-    --accent-primary: #88b7bb;
-    --accent-secondary: #624c76;
-
-        /* Variables de Layout */
-    --container-max: 1200px;
-    --space-sm: 0.5rem;
-    --space-md: 1.5rem;
-    --space-lg: 3rem;
-
+    /* Accents assombris pour rester bien lisibles sur fond blanc */
+    --accent-primary: #3b8288;
+    --accent-secondary: #513e61;
 }
 
 /* =========================================
@@ -229,4 +226,71 @@ body {
             text-align: center;
             margin-top: var(--space-lg);
             border-top: 1px solid var(--bg-panel);
+        }
+
+        /* =========================================
+           RESPONSIVE & ADAPTABILITÉ GÉNÉRALE
+           ========================================= */
+        
+        /* 1. Grille plus souple (280px minimum pour s'adapter même aux très petits écrans de 320px) */
+        .grid {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        /* 2. Écrans moyens (Tablettes et petits ordinateurs) */
+        @media (max-width: 768px) {
+            :root {
+                --space-md: 1.2rem;
+                --space-lg: 2rem;
+            }
+
+            h1 { font-size: 2.4rem; }
+            h2 { font-size: 1.8rem; }
+            h3 { font-size: 1.4rem; }
+
+            /* Réorganisation de la navigation pour éviter que ça se superpose mal */
+            header nav {
+                flex-direction: column;
+                justify-content: center;
+                gap: var(--space-sm);
+                text-align: center;
+            }
+
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: var(--space-sm);
+                padding-top: var(--space-sm);
+            }
+
+            .hero {
+                padding: var(--space-lg) 0;
+            }
+        }
+
+        /* 3. Petits écrans (Smartphones) */
+        @media (max-width: 480px) {
+            :root {
+                --space-md: 1rem;
+            }
+
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            
+            /* Les boutons d'action s'empilent au lieu de rester côte à côte */
+            .hero div {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
+
+            .btn, .btn-outline {
+                width: 100%; /* Les boutons prennent toute la largeur dispo */
+                margin-left: 0;
+            }
+            
+            /* Les cartes de la grille prennent toute la largeur automatiquement */
+            .grid {
+                grid-template-columns: 1fr;
+            }
         }
