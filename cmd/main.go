@@ -7,8 +7,9 @@ import (
 )
 
 func main() {
-	utils.SetDebugMode(true)
+	utils.SetDebugMode(false)
 
 	config.Init()
+	utils.SetDebugMode(config.Config.DEBUG)
 	router.Start()
 }
