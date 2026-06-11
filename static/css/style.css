@@ -1,0 +1,320 @@
+@import url('https://fonts.googleapis.com/css2?family=Philosopher:ital,wght@0,400;0,700;1,400;1,700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+    /* =========================================
+   1. VARIABLES & THEME
+   ========================================= */
+:root {
+
+    /* Pour les titres */
+    --font-display: 'Philosopher', sans-serif;
+    
+    /* Pour les textes courants et posts (paragraphes, listes, boutons) */
+    --font-sans: 'Roboto', system-ui, -apple-system, sans-serif;
+    
+    --bg-base: #191523;
+    --bg-surface: #2a3847;
+    --bg-surface-hover: #446383;
+    --bg-panel: #5a6a7f;       /* Bleu-gris pour les cartes ou sections secondaires */
+    --bg-deep: #323a52;        /* Bleu-gris sombre pour les pieds de page ou contrastes */
+
+    /* Typographie */
+    --text-main: #ededf0;
+    --text-muted: #8f8f9d;
+
+    /* Accents (Cyan / Violet) */
+    --accent-primary: #88b7bb;
+    --accent-secondary: #bca6d9; /* Violet plus clair pour le dark mode */
+    
+    /* Variables de Layout */
+    --container-max: 1200px;
+    --space-sm: 0.5rem;
+    --space-md: 1.5rem;
+    --space-lg: 3rem;
+
+    /* Ombres et arrondis (Design System) */
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 8px 15px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.4);
+
+}
+
+[data-theme="light"] {
+    /* Couleurs de fond plus claires */
+    --bg-base: #f4f5f7;
+    --bg-surface: #ffffff;
+    --bg-surface-hover: #eaeaea;
+    --bg-panel: #dcdcdc;
+    --bg-deep: #cacaca;
+
+    /* Typographie : Texte sombre pour contraster avec le fond clair */
+    --text-main: #191523;
+    --text-muted: #5a6a7f;
+
+    /* Accents assombris pour rester bien lisibles sur fond blanc */
+    --accent-primary: #3b8288;
+    --accent-secondary: #513e61;
+}
+
+/* =========================================
+   RESET
+   ========================================= */
+
+/* 1. Modèle de boîte prévisible sur tout le document */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* 2. Suppression des marges intérieures/extérieures par défaut */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+/* 4. Les médias (images, vidéos) sont responsives par défaut et ne débordent plus de leur conteneur */
+img, picture, video, canvas, svg {
+    display: block;
+    max-width: 100%;
+}
+
+/* 5. Les champs de formulaires héritent de la typographie du body (par défaut ils ont leur propre police affreuse) */
+input, button, textarea, select {
+    font: inherit;
+}
+
+/* 6. Évite les retours à la ligne qui cassent le design si un mot est trop long (ex: une longue URL) */
+p, h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: break-word;
+}
+
+html {
+    font-size: 100%;
+}
+
+body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* --- TYPOGRAPHIE --- */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: var(--space-md);
+        }
+
+        h1 { font-size: 3rem; color: var(--text-main); }
+        h2 { font-size: 2.2rem; color: var(--accent-primary); }
+        h3 { font-size: 1.5rem; }
+
+        p { margin-bottom: var(--space-md); color: var(--text-muted); }
+        
+        a {
+            color: var(--accent-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        a:hover { color: var(--accent-primary); }
+
+        /* --- LAYOUT --- */
+        .container {
+            max-width: var(--container-max);
+            margin: 0 auto;
+            padding: 0 var(--space-md);
+        }
+
+        section {
+            padding: var(--space-lg) 0;
+        }
+
+        .error-page {
+            min-height: 60vh;
+            display: grid;
+            place-items: center;
+            text-align: center;
+        }
+
+        .error-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(136, 183, 187, 0.18);
+            border-radius: var(--radius-md);
+            padding: calc(var(--space-lg) * 1.5);
+            box-shadow: var(--shadow-sm);
+            max-width: 720px;
+            width: 100%;
+        }
+
+        .error-code {
+            font-size: 5rem;
+            margin-bottom: var(--space-sm);
+            color: var(--accent-primary);
+            letter-spacing: -0.05em;
+        }
+
+        /* --- COMPOSANTS --- */
+        
+        /* Header */
+        header {
+            background-color: var(--bg-surface);
+            padding: var(--space-md) 0;
+            /*border-bottom: 2px solid var(--accent-primary);*/
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: var(--space-md);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: calc(var(--space-lg) * 2) 0;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--accent-primary);
+            color: var(--bg-base);
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.2s, background-color 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-secondary);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--accent-secondary);
+            color: var(--accent-secondary);
+            margin-left: var(--space-sm);
+        }
+        .btn-outline:hover {
+            background-color: var(--accent-secondary);
+            color: #fff;
+        }
+
+        /* Cards Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+
+        .card {
+            background-color: var(--bg-surface);
+            padding: var(--space-md);
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .card:hover {
+            background-color: var(--bg-surface-hover);
+            transform: translateY(-5px);
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .card h3 { color: var(--text-main); }
+
+        /* Code Block */
+        .code-block {
+            background-color: var(--bg-deep);
+            padding: var(--space-md);
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--accent-primary);
+            overflow-x: auto;
+            border: 1px solid var(--bg-panel);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-surface);
+            padding: var(--space-lg) 0;
+            text-align: center;
+            margin-top: var(--space-lg);
+            border-top: 1px solid var(--bg-panel);
+        }
+
+        /* =========================================
+           RESPONSIVE & ADAPTABILITÉ GÉNÉRALE
+           ========================================= */
+        
+        /* 1. Grille plus souple (280px minimum pour s'adapter même aux très petits écrans de 320px) */
+        .grid {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        /* 2. Écrans moyens (Tablettes et petits ordinateurs) */
+        @media (max-width: 768px) {
+            :root {
+                --space-md: 1.2rem;
+                --space-lg: 2rem;
+            }
+
+            h1 { font-size: 2.4rem; }
+            h2 { font-size: 1.8rem; }
+            h3 { font-size: 1.4rem; }
+
+            /* Réorganisation de la navigation pour éviter que ça se superpose mal */
+            header nav {
+                flex-direction: column;
+                justify-content: center;
+                gap: var(--space-sm);
+                text-align: center;
+            }
+
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: var(--space-sm);
+                padding-top: var(--space-sm);
+            }
+
+            .hero {
+                padding: var(--space-lg) 0;
+            }
+        }
+
+        /* 3. Petits écrans (Smartphones) */
+        @media (max-width: 480px) {
+            :root {
+                --space-md: 1rem;
+            }
+
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            
+            /* Les boutons d'action s'empilent au lieu de rester côte à côte */
+            .hero div {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
+
+            .btn, .btn-outline {
+                width: 100%; /* Les boutons prennent toute la largeur dispo */
+                margin-left: 0;
+            }
+            
+            /* Les cartes de la grille prennent toute la largeur automatiquement */
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
