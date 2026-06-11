@@ -131,6 +131,30 @@ body {
             padding: var(--space-lg) 0;
         }
 
+        .error-page {
+            min-height: 60vh;
+            display: grid;
+            place-items: center;
+            text-align: center;
+        }
+
+        .error-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(136, 183, 187, 0.18);
+            border-radius: var(--radius-md);
+            padding: calc(var(--space-lg) * 1.5);
+            box-shadow: var(--shadow-sm);
+            max-width: 720px;
+            width: 100%;
+        }
+
+        .error-code {
+            font-size: 5rem;
+            margin-bottom: var(--space-sm);
+            color: var(--accent-primary);
+            letter-spacing: -0.05em;
+        }
+
         /* --- COMPOSANTS --- */
         
         /* Header */

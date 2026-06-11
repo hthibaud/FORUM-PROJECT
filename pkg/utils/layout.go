@@ -52,8 +52,27 @@ func RenderFile(title string, content string, w http.ResponseWriter) {
 	executeHTML("layout", data, w)
 }
 
+// RenderError génère une page d'erreur en utilisant le template error.html.
+func RenderError(statusCode int, title, heading, message string, w http.ResponseWriter) {
+	w.WriteHeader(statusCode)
+	content := Render("error", ErrorPageInfo{
+		Code:    statusCode,
+		Heading: heading,
+		Message: message,
+	})
+
+	RenderFile(title, content, w)
+}
+
 // PageData contient les données de base pour le rendu d'une page HTML (titre, contenu, header, footer).
 type PageData struct {
 	Title string
 	Body  template.HTML
+}
+
+// ErrorPageInfo contient les données de base pour le rendu d'une page Error (code d'erreur (404/403/500), le message d'erreur).
+type ErrorPageInfo struct {
+	Code    int
+	Heading string
+	Message string
 }
