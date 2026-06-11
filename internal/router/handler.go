@@ -13,6 +13,6 @@ func Start() {
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	utils.Log("Server started at : http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	utils.Log("Server started at : http://localhost:3000")
+	log.Fatal(http.ListenAndServe(":3000", nil))
 }
