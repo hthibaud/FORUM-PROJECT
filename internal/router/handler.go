@@ -10,6 +10,8 @@ func Start() {
 	http.HandleFunc("/", home)
 	http.HandleFunc("/demo", demo)
 
+	http.HandleFunc("/auth/github", GitHubLogin)
+
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
