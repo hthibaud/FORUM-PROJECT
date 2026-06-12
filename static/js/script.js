@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fonction pour mettre à jour l'icône
     function updateIcon(theme) {
         if (themeIcon) {
-            themeIcon.textContent = theme === 'light' ? '☀️' : '🌙';
+            themeIcon.textContent = theme === 'light' ? '✺' : '⏾';
         }
     }
 
