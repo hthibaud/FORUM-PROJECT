@@ -11,3 +11,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 func demo(w http.ResponseWriter, r *http.Request) {
 	utils.RenderFile("Forum Demo", utils.Render("demo", nil), w)
 }
+func register(w http.ResponseWriter, r *http.Request){
+	utils.RenderFile("Forum Register", utils.Render("register", nil), w)
+}
+
+

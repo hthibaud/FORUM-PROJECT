@@ -11,6 +11,7 @@ import (
 func Start() {
 	http.HandleFunc("/", home)
 	http.HandleFunc("/demo", demo)
+	http.HandleFunc("/register", register)
 
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
