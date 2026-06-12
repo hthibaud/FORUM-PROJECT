@@ -14,6 +14,7 @@ func Start() {
     mux.HandleFunc("/demo", demo)
     mux.HandleFunc("/forbidden", forbidden)
     mux.HandleFunc("/server-error", serverError)
+    mux.HandleFunc("/register", register)
 
     fs := http.FileServer(http.Dir("static"))
     mux.Handle("/static/", http.StripPrefix("/static/", fs))

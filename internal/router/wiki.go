@@ -20,6 +20,9 @@ func demo(w http.ResponseWriter, r *http.Request) {
 func forbidden(w http.ResponseWriter, r *http.Request) {
     utils.RenderError(http.StatusForbidden, "403 - Accès refusé", "Erreur 403", "Vous n’avez pas les droits nécessaires pour accéder à cette page.", w)
 }
+func register(w http.ResponseWriter, r *http.Request){
+	utils.RenderFile("Forum Register", utils.Render("register", nil), w)
+}
 
 func serverError(w http.ResponseWriter, r *http.Request) {
     utils.RenderError(http.StatusInternalServerError, "500 - Erreur serveur", "Erreur 500", "Une erreur interne est survenue. Merci de réessayer plus tard.", w)
