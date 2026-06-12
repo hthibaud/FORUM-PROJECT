@@ -19,7 +19,7 @@ func InitDB() (*sql.DB, error) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
-        email TEXT
+        email TEXT NOT NULL
     );`
 
 	_, err = db.Exec(createTableSQL)
