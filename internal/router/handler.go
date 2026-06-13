@@ -1,11 +1,11 @@
 package router
 
 import (
-    "Forum/internal/config"
-    "Forum/pkg/utils"
-    "fmt"
-    "log"
-    "net/http"
+	"Forum/internal/config"
+	"Forum/pkg/utils"
+	"fmt"
+	"log"
+	"net/http"
 )
 
 func Start() {
@@ -16,9 +16,9 @@ func Start() {
     mux.HandleFunc("/server-error", serverError)
     mux.HandleFunc("/register", register)
 
-    fs := http.FileServer(http.Dir("static"))
-    mux.Handle("/static/", http.StripPrefix("/static/", fs))
+	fs := http.FileServer(http.Dir("static"))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
-    utils.Log(fmt.Sprintf("Server started at : http://localhost:%v", config.Config.PORT))
-    log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", config.Config.PORT), mux))
+	utils.Log(fmt.Sprintf("Server started at : http://localhost:%v", config.Config.PORT))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", config.Config.PORT), mux))
 }
