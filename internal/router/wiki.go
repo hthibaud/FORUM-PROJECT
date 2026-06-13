@@ -35,7 +35,8 @@ func forbidden(w http.ResponseWriter, r *http.Request) {
 	utils.RenderError(http.StatusForbidden, "403 - Accès refusé", "Erreur 403", "Vous n’avez pas les droits nécessaires pour accéder à cette page.", w)
 }
 func register(w http.ResponseWriter, r *http.Request){
-	utils.RenderFile("Forum Register", utils.Render("register", nil), w)
+	data := PageData{Title: "Forum Register"}
+	utils.RenderTemplate(w, "register.html", data)
 }
 
 func serverError(w http.ResponseWriter, r *http.Request) {
