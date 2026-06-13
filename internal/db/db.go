@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -19,6 +20,13 @@ var db *sql.DB
 // Init initializes the database connection, creates tables if they don't exist,
 // and loads initial data. It should be called once at application startup.
 func Init() {
+	dbDir := filepath.Dir(dbPath)
+	if _, err := os.Stat(dbDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(dbDir, 0755); err != nil {
+			log.Fatalf("Failed to create database directory: %v", err)
+		}
+	}
+
 	isNewDB := false
 	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
 		isNewDB = true
