@@ -12,7 +12,9 @@ func main() {
 
 	config.Init()
 	utils.SetDebugMode(config.Config.DEBUG)
+	utils.LoadTemplates()
 	db.Init()
+	defer db.Close()
 	router.Start()
 
 }
