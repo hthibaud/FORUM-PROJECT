@@ -36,12 +36,14 @@ var schema = map[string]string{
 	"post": `CREATE TABLE "post" (
 		"id"	INTEGER NOT NULL UNIQUE,
 		"author"	INTEGER NOT NULL,
+		"category_id" INTEGER NOT NULL,
 		"title"	TEXT NOT NULL,
 		"text"	TEXT NOT NULL,
 		"data_uuid"	TEXT NOT NULL UNIQUE,
 		"timestamp"	DATETIME DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY("id" AUTOINCREMENT),
-		FOREIGN KEY("author") REFERENCES "users"("id")
+		FOREIGN KEY("author") REFERENCES "users"("id"),
+		FOREIGN KEY("category_id") REFERENCES "cat"("id")
 	);`,
 	"post_message": `CREATE TABLE "post_message" (
 		"id"	INTEGER NOT NULL UNIQUE,
@@ -54,4 +56,9 @@ var schema = map[string]string{
 		FOREIGN KEY("post_id") REFERENCES "post"("id"),
 		FOREIGN KEY("user_id") REFERENCES "users"("id")
 	);`,
+}
+
+var categories = map[string]string{
+	"Général":       "Discussions générales",
+	"Programmation": "Tout sur le code",
 }
