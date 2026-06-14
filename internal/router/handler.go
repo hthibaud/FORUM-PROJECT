@@ -9,12 +9,16 @@ import (
 )
 
 func Start() {
-	http.HandleFunc("/", home)
-	http.HandleFunc("/demo", demo)
+    mux := http.NewServeMux()
+    mux.HandleFunc("/", home)
+    mux.HandleFunc("/demo", demo)
+    mux.HandleFunc("/forbidden", forbidden)
+    mux.HandleFunc("/server-error", serverError)
+    mux.HandleFunc("/register", register)
 
 	fs := http.FileServer(http.Dir("static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	utils.Log(fmt.Sprintf("Server started at : http://localhost:%v", config.Config.PORT))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", config.Config.PORT), nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", config.Config.PORT), mux))
 }
