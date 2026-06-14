@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"time"
 )
 
@@ -24,6 +25,13 @@ func Log(info string) {
 func LogError(info string, err any) {
 	date := time.Now().Format("2006-01-02 15:04:05")
 	fmt.Printf("\033[31m %v : %v : %v\n\033[0m", date, info, err)
+}
+
+// LogFatal affiche un message d'erreur et arrête le programme.
+func LogFatal(info string, err any) {
+	date := time.Now().Format("2006-01-02 15:04:05")
+	fmt.Printf("\033[31mFATAL: %v : %v : %v\n\033[0m", date, info, err)
+	os.Exit(1)
 }
 
 // Debug affiche un message de débogage si le mode debug est activé.

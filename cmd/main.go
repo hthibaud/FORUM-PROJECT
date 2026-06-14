@@ -2,10 +2,9 @@ package main
 
 import (
 	"Forum/internal/config"
+	"Forum/internal/db"
 	"Forum/internal/router"
 	"Forum/pkg/utils"
-	_ "github.com/mattn/go-sqlite3"
-
 )
 
 func main() {
@@ -13,6 +12,9 @@ func main() {
 
 	config.Init()
 	utils.SetDebugMode(config.Config.DEBUG)
+	utils.LoadTemplates()
+	db.Init()
+	defer db.Close()
 	router.Start()
 
 }
