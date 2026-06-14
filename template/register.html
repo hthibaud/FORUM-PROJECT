@@ -9,7 +9,11 @@
                 <h1 style="font-size: 2.5rem;">Créer votre compte</h1>
                 <p class="text-muted" style="margin-top: -1rem; margin-bottom: 2rem; font-size: 1.1rem;">Rejoignez notre communauté!</p>
 
-                <form id="registerForm">
+                {{if .Message}}
+                <div class="alert alert-danger">{{.Message}}</div>
+                {{end}}
+
+                <form method="post" action="/register">
                     
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <input type="text" id="username" name="username" placeholder=" votrePseudo" required 
