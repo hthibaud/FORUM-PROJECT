@@ -15,6 +15,7 @@ func Start() {
 	mux.HandleFunc("/server-error", serverError)
 	mux.HandleFunc("/register", register)
 	mux.HandleFunc("/login", login)
+	mux.HandleFunc("/logout", logout)
 
 	fs := http.FileServer(http.Dir("static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))

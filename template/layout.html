@@ -24,7 +24,12 @@
                             <span id="theme-icon">⏾</span>
                         </button>
                     </li>
+                    {{if .IsAuthenticated}}
+                    <li><a href="/logout" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Déconnexion</a></li>
+                    {{else}}
                     <li><a href="/login" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Connexion</a></li>
+                    <li><a href="/register" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Inscription</a></li>
+                    {{end}}
                 </ul>
             </nav>
         </div>
