@@ -219,6 +219,17 @@ func DeleteSessionByUUID(uuid string) error {
 	return nil
 }
 
+// DeleteExpiredSessions removes all expired sessions from the database.
+func DeleteExpiredSessions() error {
+	query := `DELETE FROM session WHERE end_at <= ?`
+	_, err := db.Exec(query, time.Now())
+	if err != nil {
+		return fmt.Errorf("could not delete expired sessions: %w", err)
+	}
+	utils.Log("Expired sessions cleaned up.")
+	return nil
+}
+
 // -- Post Functions --
 
 // CreatePost adds a new post to the database.

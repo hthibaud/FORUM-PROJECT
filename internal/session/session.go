@@ -17,7 +17,7 @@ func CreateSession(w http.ResponseWriter, userID int, r *http.Request) error {
 		return errors.New("Unable to generate the session ID")
 	}
 
-	token, err := utils.GenerateUUID() // Utiliser un UUID comme token
+	token, err := utils.GenerateUUID()
 	if err != nil {
 		return errors.New("unable to generate the session token")
 	}
@@ -43,7 +43,7 @@ func CreateSession(w http.ResponseWriter, userID int, r *http.Request) error {
 	return nil
 }
 
-// GetUserIDFromSession récupère l'ID de l'utilisateur à partir du cookie de session en vérifiant la base de données
+// GetUserIDFromSession retrieves the user’s ID from the session cookie by checking the database
 func GetUserIDFromSession(r *http.Request) (int, error) {
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
@@ -59,7 +59,6 @@ func GetUserIDFromSession(r *http.Request) (int, error) {
 
 	if session == nil || time.Now().After(session.EndAt) {
 		if session != nil {
-			// Nettoyer la session expirée
 			err := db.DeleteSessionByUUID(sessionID)
 			if err != nil {
 				utils.LogError("Impossible de supprimer la session expirée", err)
@@ -71,7 +70,7 @@ func GetUserIDFromSession(r *http.Request) (int, error) {
 	return session.UserID, nil
 }
 
-// DeleteSession supprime la session de l'utilisateur de la base de données
+// DeleteSession deletes the user’s session from the database
 func DeleteSession(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
@@ -84,7 +83,7 @@ func DeleteSession(w http.ResponseWriter, r *http.Request) {
 		utils.LogError("Impossible de supprimer la session de la bdd", err)
 	}
 
-	// Expire le cookie dans le navigateur
+	// Expire the cookie in the browser
 	http.SetCookie(w, &http.Cookie{
 		Name:   "session_id",
 		Value:  "",
@@ -93,8 +92,28 @@ func DeleteSession(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// IsAuthenticated vérifie si l'utilisateur est authentifié
+// IsAuthenticated checks if the user is authenticated
 func IsAuthenticated(r *http.Request) bool {
 	_, err := GetUserIDFromSession(r)
 	return err == nil
+}
+
+// StartSessionCleanup starts a cleanup routine for expired sessions.
+func startSessionCleanup() {
+	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			utils.Log("Running session cleanup...")
+			err := db.DeleteExpiredSessions()
+			if err != nil {
+				utils.LogError("Error during session cleanup", err)
+			}
+		}
+	}()
+}
+
+func Init() {
+	startSessionCleanup()
 }
