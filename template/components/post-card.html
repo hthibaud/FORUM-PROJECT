@@ -1,0 +1,6 @@
+{{define "post-card"}}
+<a href="/post/{{.ID}}" class="card">
+    <h3>{{.Title}}</h3>
+    <p>Par <strong>{{.Author}}</strong> - {{.Timestamp.Format "02 Jan 2006"}}</p>
+</a>
+{{end}}
