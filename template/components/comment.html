@@ -1,0 +1,43 @@
+{{define "comment"}}
+{{/* "Page" est le PageData root, "Comment" est le commentaire actuel */}}
+<div class="comment-card" id="comment-{{.Comment.ID}}">
+    <div class="comment-header">
+        <div class="avatar-placeholder">
+            <span>{{.Comment.AuthorUsername | initial}}</span>
+        </div>
+        <div class="comment-author-info">
+            <span class="comment-author-name">{{.Comment.AuthorUsername}}</span>
+            <span class="comment-meta">le {{.Comment.Timestamp.Format "02 Jan 2006 à 15:04"}}</span>
+        </div>
+    </div>
+    <div class="comment-body">
+        <p>{{.Comment.Text}}</p>
+    </div>
+    <div class="comment-footer">
+        <button class="btn-action btn-reply" data-comment-id="{{.Comment.ID}}">
+            <img src="/static/icon/repondre.png" alt="Répondre">
+            <span>Répondre</span>
+        </button>
+    </div>
+
+    {{if .Page.IsAuthenticated}}
+    <div id="reply-form-{{.Comment.ID}}" class="reply-form">
+        <form action="/post/{{.Comment.PostID}}/comment" method="POST">
+            <input type="hidden" name="parent_id" value="{{.Comment.ID}}">
+            <div class="form-group">
+                <textarea name="comment" rows="3" placeholder="Votre réponse..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-sm">Envoyer</button>
+        </form>
+    </div>
+    {{end}}
+
+    {{if .Comment.Replies}}
+    <div class="comment-replies">
+        {{range .Comment.Replies}}
+            {{template "comment" (dict "Page" $.Page "Comment" .)}}
+        {{end}}
+    </div>
+    {{end}}
+</div>
+{{end}}

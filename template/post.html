@@ -43,26 +43,12 @@
         {{end}}
 
         <div class="comments-list">
+            {{$pageData := .}}
             {{range .Comments}}
-            <div class="comment-card">
-                <div class="comment-header">
-                     <div class="avatar-placeholder">
-                        <span></span>
-                     </div>
-                     <div class="comment-author-info">
-                        <span class="comment-author-name">{{.AuthorUsername}}</span>
-                        <span class="comment-meta">le {{.Timestamp.Format "02 Jan 2006 à 15:04"}}</span>
-                     </div>
-                </div>
-                <div class="comment-body">
-                    <p>{{.Text}}</p>
-                </div>
-                <div class="comment-footer">
-                    <button class="btn-action"><img src="/static/icon/pouce-leve.png" alt="Like"></button>
-                    <button class="btn-action"><img src="/static/icon/repondre.png" alt="Like"></button>
-                </div>
-            </div>
-            {{else}}
+                {{template "comment" (dict "Page" $pageData "Comment" .)}}
+            {{end}}
+
+            {{if not .Comments}}
             <div class="no-comments-card">
                 <p>Soyez le premier à commenter !</p>
             </div>

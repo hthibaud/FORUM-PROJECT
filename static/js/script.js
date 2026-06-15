@@ -43,4 +43,33 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('theme', newTheme);
         updateIcon(newTheme);
     });
+
+    // --- Reply Form Logic ---
+    console.log("Setting up reply form listeners...");
+    const replyButtons = document.querySelectorAll('.btn-reply');
+    console.log(`Found ${replyButtons.length} reply buttons.`);
+
+    replyButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            console.log("Reply button clicked.");
+            const commentId = event.currentTarget.dataset.commentId;
+            console.log(`Comment ID: ${commentId}`);
+            if (!commentId) {
+                console.error("Button is missing data-comment-id attribute.");
+                return;
+            }
+
+            const formId = `reply-form-${commentId}`;
+            const form = document.getElementById(formId);
+            console.log(`Looking for form with ID: ${formId}`);
+
+            if (form) {
+                console.log("Form found. Toggling 'active' class.", form);
+                form.classList.toggle('active');
+            } else {
+                console.error(`Reply form with ID ${formId} not found.`);
+            }
+        });
+    });
 });
+

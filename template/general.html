@@ -29,10 +29,10 @@
                     {{if .Posts}}
                         <div class="post-list">
                             {{range .Posts}}
-                            <div class="post-item">
-                                <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
+                            <a href="/post/{{.ID}}" class="post-item">
+                                <h2>{{.Title}}</h2>
                                 <p class="post-meta">Par <strong>{{.Author}}</strong> - {{.Timestamp.Format "02 Jan 2006"}}</p>
-                            </div>
+                            </a>
                             {{end}}
                         </div>
                     {{else}}
