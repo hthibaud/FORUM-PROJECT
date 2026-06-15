@@ -139,7 +139,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		}
 		utils.Debug("Session created for user: " + username)
 
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/general", http.StatusSeeOther)
 		return
 	}
 
