@@ -17,6 +17,9 @@ func Start() {
 	mux.HandleFunc("/register", register)
 	mux.HandleFunc("/login", login)	
 	mux.HandleFunc("/logout", logout)
+	mux.HandleFunc("/general", general)
+	mux.HandleFunc("/post/", postView)
+	mux.HandleFunc("/post/create", createPost)
 	mux.HandleFunc("/category/", categoryPage)
 
 	fs := http.FileServer(http.Dir("static"))
