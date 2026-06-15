@@ -27,3 +27,7 @@ func register(w http.ResponseWriter, r *http.Request){
 func serverError(w http.ResponseWriter, r *http.Request) {
     utils.RenderError(http.StatusInternalServerError, "500 - Erreur serveur", "Erreur 500", "Une erreur interne est survenue. Merci de réessayer plus tard.", w)
 }
+
+func general(w http.ResponseWriter, r *http.Request) {
+	utils.RenderFile("Forum General", utils.Render("general", nil), w)
+}
