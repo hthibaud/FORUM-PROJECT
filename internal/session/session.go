@@ -4,6 +4,7 @@ import (
 	"Forum/internal/db"
 	"Forum/pkg/utils"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -96,6 +97,30 @@ func DeleteSession(w http.ResponseWriter, r *http.Request) {
 func IsAuthenticated(r *http.Request) bool {
 	_, err := GetUserIDFromSession(r)
 	return err == nil
+}
+
+// GetUserFromSession retrieves user information from the current session.
+func GetUserFromSession(r *http.Request) (*db.User, error) {
+	utils.Debug("GetUserFromSession: Attempting to get user from session")
+	userID, err := GetUserIDFromSession(r)
+	if err != nil {
+		utils.Debug(fmt.Sprintf("GetUserFromSession: Could not get user ID from session: %v", err))
+		return nil, nil // No valid session, so no user
+	}
+
+	utils.Debug(fmt.Sprintf("GetUserFromSession: Session valid for user ID: %d", userID))
+	user, err := db.GetUserByID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user by id %d: %w", userID, err)
+	}
+
+	if user == nil {
+		utils.Debug(fmt.Sprintf("GetUserFromSession: GetUserByID returned no user for ID: %d", userID))
+		return nil, nil
+	}
+
+	utils.Debug(fmt.Sprintf("GetUserFromSession: Successfully retrieved user '%s'", user.Username))
+	return user, nil
 }
 
 // StartSessionCleanup starts a cleanup routine for expired sessions.
