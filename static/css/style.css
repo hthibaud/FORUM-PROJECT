@@ -128,27 +128,56 @@ body {
         }
 
         .error-page {
-            min-height: 60vh;
-            display: grid;
-            place-items: center;
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
+            padding: var(--space-md) 0;
         }
 
         .error-card {
             background-color: rgba(255, 255, 255, 0.05);
             border: 0.063rem solid rgba(136, 183, 187, 0.18);
             border-radius: var(--radius-md);
-            padding: calc(var(--space-lg) * 1.5);
+            padding: calc(var(--space-lg) * 1.2);
             box-shadow: var(--shadow-sm);
             max-width: 45rem;
-            width: 100%;
+            width: min(100%, 45rem);
+            max-height: calc(100vh - 14rem);
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .error-card > * {
+            margin: 0;
         }
 
         .error-code {
-            font-size: 5rem;
+            font-size: clamp(3rem, 8vw, 5rem);
             margin-bottom: var(--space-sm);
             color: var(--accent-primary);
             letter-spacing: -0.05rem;
+        }
+
+        @media (max-width: 768px) {
+            .error-card {
+                padding: var(--space-md);
+                max-height: calc(100vh - 8rem);
+            }
+
+            .error-code {
+                font-size: clamp(2.5rem, 16vw, 4rem);
+            }
+
+            .error-card p,
+            .error-card h1 {
+                margin: 0 auto;
+            }
+
+            .error-card div {
+                flex-direction: column;
+            }
         }
 
         /* --- COMPOSANTS --- */

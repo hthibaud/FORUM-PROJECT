@@ -97,13 +97,13 @@ func loadCategories() bool {
 		err := db.QueryRow("SELECT 1 FROM cat WHERE name = ?", name).Scan(&exists)
 
 		if err != nil && err != sql.ErrNoRows {
-			utils.LogError(fmt.Sprintf("Error checking if category '%s' exists: %v", name), err)
+			utils.LogError(fmt.Sprintf("Error checking if category '%s' exists: %v", name, err), err)
 			return false
 		}
 
 		if err == sql.ErrNoRows {
 			if _, err := db.Exec("INSERT INTO cat (name, desc) VALUES (?, ?)", name, desc); err != nil {
-				utils.LogError(fmt.Sprintf("Error inserting category '%s': %v", name), err)
+				utils.LogError(fmt.Sprintf("Error inserting category '%s': %v", name, err), err)
 				return false
 			} else {
 				utils.Debug(fmt.Sprintf("Category '%s' inserted.", name))
