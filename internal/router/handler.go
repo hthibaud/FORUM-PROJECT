@@ -13,6 +13,7 @@ func Start() {
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/forbidden", forbidden)
 	mux.HandleFunc("/server-error", serverError)
+	mux.HandleFunc("/not-found", notFound)
 	mux.HandleFunc("/register", register)
 	mux.HandleFunc("/login", login)
 	mux.HandleFunc("/logout", logout)

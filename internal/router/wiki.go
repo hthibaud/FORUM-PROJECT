@@ -9,7 +9,7 @@ import (
 
 func home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		notFound(w, r)
 		return
 	}
 
@@ -30,8 +30,13 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func forbidden(w http.ResponseWriter, r *http.Request) {
-	utils.RenderError(http.StatusForbidden, "403 - Accès refusé", "Erreur 403", "Vous n’avez pas les droits nécessaires pour accéder à cette page.", w)
+	utils.RenderError(http.StatusForbidden, "403 - Accès refusé", "Erreur 403", "Vous n’avez pas les droits nécessaires pour accéder à cette page.", session.IsAuthenticated(r), w)
 }
+
+func notFound(w http.ResponseWriter, r *http.Request) {
+	utils.RenderError(http.StatusNotFound, "404 - Page non trouvée", "Erreur 404", "La page que vous recherchez n'existe pas.", session.IsAuthenticated(r), w)
+}
+
 func register(w http.ResponseWriter, r *http.Request) {
 	utils.Debug("Register page accessed")
 	data := PageData{Title: "Forum Register"}
@@ -97,7 +102,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 }
 
 func serverError(w http.ResponseWriter, r *http.Request) {
-	utils.RenderError(http.StatusInternalServerError, "500 - Erreur serveur", "Erreur 500", "Une erreur interne est survenue. Merci de réessayer plus tard.", w)
+	utils.RenderError(http.StatusInternalServerError, "500 - Erreur serveur", "Erreur 500", "Une erreur interne est survenue. Merci de réessayer plus tard.", session.IsAuthenticated(r), w)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {

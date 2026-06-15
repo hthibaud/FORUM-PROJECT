@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -47,39 +49,62 @@ func LoadTemplates() {
 	Log("All templates loaded and cached successfully.")
 }
 
+// executeTemplateToBuffer renders a template into memory and returns the result.
+// This lets callers set the HTTP status code only after the template has rendered successfully.
+func executeTemplateToBuffer(name string, data any) (*bytes.Buffer, error) {
+	ts, ok := templates[name]
+	if !ok {
+		err_msg := fmt.Sprintf("The template %s does not exist.", name)
+		LogError(err_msg, nil)
+		return nil, errors.New(err_msg)
+	}
+
+	buf := new(bytes.Buffer)
+	err := ts.ExecuteTemplate(buf, "layout.html", data)
+	if err != nil {
+		LogError(fmt.Sprintf("Error executing template %s", name), err)
+		return nil, err
+	}
+
+	return buf, nil
+}
+
 // RenderTemplate executes a pre-compiled template from the cache, ensuring a fast and
 // consistent response.
 func RenderTemplate(w http.ResponseWriter, name string, data any) {
-	// Retrieve the requested template from the cache.
-	ts, ok := templates[name]
-	if !ok {
-		// This indicates a developer error (e.g., a typo in the template name).
-		err_msg := fmt.Sprintf("The template %s does not exist.", name)
-		LogError(err_msg, nil)
+	buf, err := executeTemplateToBuffer(name, data)
+	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	// Execute the "layout" template. The content of the specific page
-	// will be rendered inside it thanks to the `{{template "page" .}}` block.
-	err := ts.ExecuteTemplate(w, "layout.html", data)
+	_, err = buf.WriteTo(w)
 	if err != nil {
-		LogError(fmt.Sprintf("Error executing template %s", name), err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		LogError(fmt.Sprintf("Failed to write template %s to response", name), err)
 	}
 }
 
 // RenderError generates a standardized error page using the error.html template.
-func RenderError(statusCode int, title, heading, message string, w http.ResponseWriter) {
-	w.WriteHeader(statusCode)
+func RenderError(statusCode int, title, heading, message string, isAuthenticated bool, w http.ResponseWriter) {
 	data := ErrorPageInfo{
-		Title:   title,
-		Heading: heading,
-		Message: message,
-		Code:    statusCode,
+		Title:           title,
+		Heading:         heading,
+		Message:         message,
+		Code:            statusCode,
+		IsAuthenticated: isAuthenticated,
 	}
-	// The data is passed to error.html which is then rendered inside layout.html.
-	RenderTemplate(w, "error.html", data)
+
+	buf, err := executeTemplateToBuffer("error.html", data)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(statusCode)
+	_, err = buf.WriteTo(w)
+	if err != nil {
+		LogError("Failed to write error page to response", err)
+	}
 }
 
 // PageData is a generic struct for page data. It is currently not used
@@ -91,8 +116,9 @@ type PageData struct {
 
 // ErrorPageInfo contains the specific data needed to render the error page.
 type ErrorPageInfo struct {
-	Code    int
-	Heading string
-	Message string
-	Title   string
+	Code            int
+	Heading         string
+	Message         string
+	Title           string
+	IsAuthenticated bool
 }
