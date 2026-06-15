@@ -9,3 +9,8 @@ type PageData struct {
 	Categories      []db.Category
 	IsAuthenticated bool
 }
+
+type discoverPageData struct {
+	Title      string
+	Categories []db.Category
+}
