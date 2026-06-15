@@ -5,6 +5,7 @@ import (
 	"Forum/internal/session"
 	"Forum/pkg/utils"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -25,9 +26,17 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	recentPosts, err := db.GetRecentPosts(5) // On récupère les 5 plus récents
+	if err != nil {
+		utils.LogError("could not get recent posts", err)
+		serverError(w, r)
+		return
+	}
+
 	data := PageData{
-		Title:           "Home Page",
+		Title:           "Accueil",
 		Categories:      categories,
+		Posts:           recentPosts, // On ajoute les posts ici
 		IsAuthenticated: session.IsAuthenticated(r),
 	}
 
@@ -227,7 +236,6 @@ func postView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Convert idStr to int
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		utils.LogError("Invalid post id", err)
@@ -235,7 +243,14 @@ func postView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := db.GetPostByID(id)
+	// Get current user, if any
+	user, _ := session.GetUserFromSession(r)
+	var currentUserID int
+	if user != nil {
+		currentUserID = user.ID
+	}
+
+	post, err := db.GetPostByID(id, currentUserID)
 	if err != nil {
 		utils.LogError("Error retrieving post", err)
 		serverError(w, r)
@@ -247,7 +262,7 @@ func postView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	comments, err := db.GetCommentsForPost(id)
+	comments, err := db.GetCommentsForPost(id, currentUserID)
 	if err != nil {
 		utils.LogError("Error retrieving comments", err)
 		serverError(w, r)
@@ -435,4 +450,93 @@ func handleCommentSubmission(w http.ResponseWriter, r *http.Request) {
 	utils.Debug(fmt.Sprintf("Successfully created comment for post %d by user %d", postID, user.ID))
 
 	http.Redirect(w, r, fmt.Sprintf("/post/%d", postID), http.StatusSeeOther)
+}
+
+func handlePostLike(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user, err := session.GetUserFromSession(r)
+	if err != nil || user == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var req struct {
+		PostID int `json:"post_id"`
+		Type   int `json:"type"` // 1 for like, -1 for dislike, 0 to remove
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	if err := db.LikePost(user.ID, req.PostID, req.Type); err != nil {
+		utils.LogError("could not like post", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Fetch updated counts
+	post, err := db.GetPostByID(req.PostID, user.ID)
+	if err != nil || post == nil {
+		utils.LogError("could not get post by id after like", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"likes":      post.Likes,
+		"dislikes":   post.Dislikes,
+		"userChoice": post.UserChoice,
+	})
+}
+
+func handleCommentLike(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user, err := session.GetUserFromSession(r)
+	if err != nil || user == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var req struct {
+		CommentID int `json:"comment_id"`
+		Type      int `json:"type"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	if err := db.LikeComment(user.ID, req.CommentID, req.Type); err != nil {
+		utils.LogError("could not like comment", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// To send back the updated counts, we need a way to get a single comment's data.
+	// This function needs to be created in db/db.go
+	comment, err := db.GetCommentByID(req.CommentID, user.ID)
+	if err != nil || comment == nil {
+		utils.LogError("could not get comment by id after like", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"likes":      comment.Likes,
+		"dislikes":   comment.Dislikes,
+		"userChoice": comment.UserChoice,
+	})
 }

@@ -20,6 +20,9 @@ func Start() {
 	mux.HandleFunc("/post/", postView)
 	mux.HandleFunc("/post/create", createPost)
 	mux.HandleFunc("/category/", categoryPage)
+	// Like / Dislike handlers
+	mux.HandleFunc("/like/post", handlePostLike)
+	mux.HandleFunc("/like/comment", handleCommentLike)
 
 	fs := http.FileServer(http.Dir("static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
