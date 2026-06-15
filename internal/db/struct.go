@@ -48,12 +48,13 @@ type Post struct {
 // Comment represents a single comment on a post.
 type Comment struct {
 	ID             int
-	UserID         int
+	AuthorID       int
+	AuthorUsername string
 	PostID         int
-	RepID          sql.NullInt64 // Can be NULL
+	ParentID       sql.NullInt64 // Utiliser sql.NullInt64 pour les clés étrangères nullables
 	Text           string
 	Timestamp      time.Time
-	AuthorUsername string // Username of the author
+	Replies        []*Comment // Pour les commentaires imbriqués
 }
 
 // Notification represents a user notification.

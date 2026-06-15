@@ -367,9 +367,9 @@ func GetPostsByCategoryPaginated(categoryID, limit, offset int) ([]Post, error) 
 // -- Comment Functions --
 
 // CreateComment adds a new comment to a post.
-func CreateComment(userID, postID int, repID sql.NullInt64, text string) error {
-	query := `INSERT INTO post_message (user_id, post_id, rep_id, text) VALUES (?, ?, ?, ?)`
-	_, err := db.Exec(query, userID, postID, repID, text)
+func CreateComment(comment Comment) error {
+	query := `INSERT INTO post_message (user_id, post_id, rep_id, text, timestamp) VALUES (?, ?, ?, ?, ?)`
+	_, err := db.Exec(query, comment.AuthorID, comment.PostID, comment.ParentID, comment.Text, comment.Timestamp)
 	if err != nil {
 		return fmt.Errorf("could not create comment: %w", err)
 	}
@@ -377,7 +377,7 @@ func CreateComment(userID, postID int, repID sql.NullInt64, text string) error {
 }
 
 // GetCommentsByPostID retrieves all comments for a given post.
-func GetCommentsByPostID(postID int) ([]Comment, error) {
+func GetCommentsForPost(postID int) ([]Comment, error) {
 	query := `
 		SELECT c.id, c.user_id, c.post_id, c.rep_id, c.text, c.timestamp, u.username
 		FROM post_message c
@@ -394,7 +394,7 @@ func GetCommentsByPostID(postID int) ([]Comment, error) {
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
-		if err := rows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.RepID, &comment.Text, &comment.Timestamp, &comment.AuthorUsername); err != nil {
+		if err := rows.Scan(&comment.ID, &comment.AuthorID, &comment.PostID, &comment.ParentID, &comment.Text, &comment.Timestamp, &comment.AuthorUsername); err != nil {
 			return nil, fmt.Errorf("could not scan comment: %w", err)
 		}
 		comments = append(comments, comment)
@@ -421,7 +421,7 @@ func GetTopLevelCommentsByPostID(postID, limit, offset int) ([]Comment, error) {
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
-		if err := rows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.RepID, &comment.Text, &comment.Timestamp, &comment.AuthorUsername); err != nil {
+		if err := rows.Scan(&comment.ID, &comment.AuthorID, &comment.PostID, &comment.ParentID, &comment.Text, &comment.Timestamp, &comment.AuthorUsername); err != nil {
 			return nil, fmt.Errorf("could not scan comment: %w", err)
 		}
 		comments = append(comments, comment)
@@ -447,7 +447,7 @@ func GetChildComments(parentID int) ([]Comment, error) {
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
-		if err := rows.Scan(&comment.ID, &comment.UserID, &comment.PostID, &comment.RepID, &comment.Text, &comment.Timestamp, &comment.AuthorUsername); err != nil {
+		if err := rows.Scan(&comment.ID, &comment.AuthorID, &comment.PostID, &comment.ParentID, &comment.Text, &comment.Timestamp, &comment.AuthorUsername); err != nil {
 			return nil, fmt.Errorf("could not scan child comment: %w", err)
 		}
 		comments = append(comments, comment)
@@ -474,7 +474,7 @@ func GetParentComment(childID int) (*Comment, error) {
 		FROM post_message c
 		JOIN users u ON c.user_id = u.id
 		WHERE c.id = ?`
-	err = db.QueryRow(query, parentID.Int64).Scan(&parentComment.ID, &parentComment.UserID, &parentComment.PostID, &parentComment.RepID, &parentComment.Text, &parentComment.Timestamp, &parentComment.AuthorUsername)
+	err = db.QueryRow(query, parentID.Int64).Scan(&parentComment.ID, &parentComment.AuthorID, &parentComment.PostID, &parentComment.ParentID, &parentComment.Text, &parentComment.Timestamp, &parentComment.AuthorUsername)
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve parent comment: %w", err)
 	}
