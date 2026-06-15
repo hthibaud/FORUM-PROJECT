@@ -212,11 +212,18 @@ body {
         }
 
         .card {
+            display: block;
+            min-width: 23rem;
+            max-width: 23rem;
+            min-height: 12rem;
+            max-height: 12rem;
             background-color: var(--bg-surface);
             padding: var(--space-md);
             border-radius: 0.5rem;
             transition: background-color 0.3s ease, transform 0.3s ease;
             border-left: 0.25rem solid transparent;
+            color: inherit;
+            text-decoration: none;
         }
 
         .card:hover {

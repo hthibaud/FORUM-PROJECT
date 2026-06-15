@@ -152,5 +152,5 @@ func logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func general(w http.ResponseWriter, r *http.Request) {
-	utils.RenderFile("Forum General", utils.Render("general", nil), w)
+	utils.RenderTemplate(w, "general.html", nil)
 }

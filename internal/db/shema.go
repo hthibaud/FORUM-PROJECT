@@ -61,4 +61,6 @@ var schema = map[string]string{
 var categories = map[string]string{
 	"Général":       "Discussions générales",
 	"Programmation": "Tout sur le code",
+	"IOT & Robotique": "Vous aimez les robotique et les objets connectés? Nous aussi!",
+	"Cloud & Intelligence artificielle": "Tout sur le cloud et l'intelligence artificielle à la maison",
 }
