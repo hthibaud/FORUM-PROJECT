@@ -201,6 +201,7 @@ func categoryPage(w http.ResponseWriter, r *http.Request) {
 		Categories:       categories,
 		SelectedCategory: selectedCategory,
 		Posts:            posts,
+		Notifications:    []db.Notification{},
 		IsAuthenticated:  session.IsAuthenticated(r),
 	}
 	utils.RenderTemplate(w, "general.html", data)
