@@ -43,6 +43,9 @@ type Post struct {
 	Timestamp   time.Time
 	Author      string // Username of the author
 	CommentsNbr int    // Number of comments on the post
+	Likes       int
+	Dislikes    int
+	UserChoice  int // 1 for like, -1 for dislike, 0 for no vote
 }
 
 // Comment represents a single comment on a post.
@@ -55,6 +58,9 @@ type Comment struct {
 	Text           string
 	Timestamp      time.Time
 	Replies        []*Comment // Pour les commentaires imbriqués
+	Likes          int
+	Dislikes       int
+	UserChoice     int // 1 for like, -1 for dislike, 0 for no vote
 }
 
 // Notification represents a user notification.

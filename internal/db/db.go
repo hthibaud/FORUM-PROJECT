@@ -266,15 +266,26 @@ func CreatePost(authorID, categoryID int, title, text string) (int64, error) {
 	return id, nil
 }
 
-// GetPostByID retrieves a single post by its ID, including the author's username.
-func GetPostByID(id int) (*Post, error) {
+// GetPostByID retrieves a single post by its ID, including the author's username and like/dislike counts.
+// The currentUserID is used to determine if the user has liked or disliked the post. Use 0 if the user is not logged in.
+func GetPostByID(id int, currentUserID int) (*Post, error) {
 	post := &Post{}
 	query := `
-		SELECT p.id, p.author, p.category_id, p.title, p.text, p.data_uuid, p.timestamp, u.username
+		SELECT
+			p.id, p.author, p.category_id, p.title, p.text, p.data_uuid, p.timestamp, u.username,
+			COALESCE(SUM(CASE WHEN pl.type = 1 THEN 1 ELSE 0 END), 0) AS likes,
+			COALESCE(SUM(CASE WHEN pl.type = -1 THEN 1 ELSE 0 END), 0) AS dislikes,
+			COALESCE((SELECT type FROM post_likes WHERE user_id = ? AND post_id = p.id), 0) AS user_choice
 		FROM post p
 		JOIN users u ON p.author = u.id
-		WHERE p.id = ?`
-	err := db.QueryRow(query, id).Scan(&post.ID, &post.AuthorID, &post.CategoryID, &post.Title, &post.Text, &post.DataUUID, &post.Timestamp, &post.Author)
+		LEFT JOIN post_likes pl ON p.id = pl.post_id
+		WHERE p.id = ?
+		GROUP BY p.id`
+
+	err := db.QueryRow(query, currentUserID, id).Scan(
+		&post.ID, &post.AuthorID, &post.CategoryID, &post.Title, &post.Text,
+		&post.DataUUID, &post.Timestamp, &post.Author, &post.Likes, &post.Dislikes, &post.UserChoice,
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -340,7 +351,10 @@ func GetRecentPosts(limit int) ([]Post, error) {
 // GetPostsByCategoryPaginated retrieves a slice of posts for a given category with a limit and offset.
 func GetPostsByCategoryPaginated(categoryID, limit, offset int) ([]Post, error) {
 	query := `
-		SELECT p.id, p.author, p.category_id, p.title, p.timestamp, u.username
+		SELECT
+			p.id, p.author, p.category_id, p.title, p.timestamp, u.username,
+			(SELECT COUNT(*) FROM post_likes WHERE post_id = p.id AND type = 1) as likes,
+			(SELECT COUNT(*) FROM post_likes WHERE post_id = p.id AND type = -1) as dislikes
 		FROM post p
 		JOIN users u ON p.author = u.id
 		WHERE p.category_id = ?
@@ -356,7 +370,7 @@ func GetPostsByCategoryPaginated(categoryID, limit, offset int) ([]Post, error) 
 	var posts []Post
 	for rows.Next() {
 		var post Post
-		if err := rows.Scan(&post.ID, &post.AuthorID, &post.CategoryID, &post.Title, &post.Timestamp, &post.Author); err != nil {
+		if err := rows.Scan(&post.ID, &post.AuthorID, &post.CategoryID, &post.Title, &post.Timestamp, &post.Author, &post.Likes, &post.Dislikes); err != nil {
 			return nil, fmt.Errorf("could not scan post: %w", err)
 		}
 		posts = append(posts, post)
@@ -376,16 +390,22 @@ func CreateComment(comment Comment) error {
 	return nil
 }
 
-// GetCommentsByPostID retrieves all comments for a given post.
-func GetCommentsForPost(postID int) ([]Comment, error) {
+// GetCommentsByPostID retrieves all comments for a given post, ordered by popularity.
+func GetCommentsForPost(postID int, currentUserID int) ([]Comment, error) {
 	query := `
-		SELECT c.id, c.user_id, c.post_id, c.rep_id, c.text, c.timestamp, u.username
+		SELECT
+			c.id, c.user_id, c.post_id, c.rep_id, c.text, c.timestamp, u.username,
+			COALESCE(SUM(CASE WHEN cl.type = 1 THEN 1 ELSE 0 END), 0) AS likes,
+			COALESCE(SUM(CASE WHEN cl.type = -1 THEN 1 ELSE 0 END), 0) AS dislikes,
+			COALESCE((SELECT type FROM comment_likes WHERE user_id = ? AND comment_id = c.id), 0) AS user_choice
 		FROM post_message c
 		JOIN users u ON c.user_id = u.id
+		LEFT JOIN comment_likes cl ON c.id = cl.comment_id
 		WHERE c.post_id = ?
-		ORDER BY c.timestamp ASC`
+		GROUP BY c.id
+		ORDER BY (likes - dislikes) DESC, c.timestamp ASC`
 
-	rows, err := db.Query(query, postID)
+	rows, err := db.Query(query, currentUserID, postID)
 	if err != nil {
 		return nil, fmt.Errorf("could not query comments: %w", err)
 	}
@@ -394,7 +414,11 @@ func GetCommentsForPost(postID int) ([]Comment, error) {
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
-		if err := rows.Scan(&comment.ID, &comment.AuthorID, &comment.PostID, &comment.ParentID, &comment.Text, &comment.Timestamp, &comment.AuthorUsername); err != nil {
+		if err := rows.Scan(
+			&comment.ID, &comment.AuthorID, &comment.PostID, &comment.ParentID,
+			&comment.Text, &comment.Timestamp, &comment.AuthorUsername,
+			&comment.Likes, &comment.Dislikes, &comment.UserChoice,
+		); err != nil {
 			return nil, fmt.Errorf("could not scan comment: %w", err)
 		}
 		comments = append(comments, comment)
@@ -480,4 +504,87 @@ func GetParentComment(childID int) (*Comment, error) {
 	}
 
 	return parentComment, nil
+}
+
+// -- Like / Dislike Functions --
+
+// LikePost applies a like or dislike to a post from a user.
+func LikePost(userID, postID, likeType int) error {
+	// The type should be 1 for a like, -1 for a dislike.
+	// We first delete any existing like/dislike from this user for this post to avoid conflicts.
+	// Then, we insert the new one. If the user clicks the same button again, the front-end should send a '0' to remove the vote.
+
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("could not start transaction: %w", err)
+	}
+	defer tx.Rollback() // Rollback on error
+
+	// Remove any existing vote from this user for this post
+	_, err = tx.Exec(`DELETE FROM post_likes WHERE user_id = ? AND post_id = ?`, userID, postID)
+	if err != nil {
+		return fmt.Errorf("could not remove existing post like: %w", err)
+	}
+
+	// If likeType is not 0, insert the new vote
+	if likeType == 1 || likeType == -1 {
+		_, err = tx.Exec(`INSERT INTO post_likes (user_id, post_id, type) VALUES (?, ?, ?)`, userID, postID, likeType)
+		if err != nil {
+			return fmt.Errorf("could not insert new post like: %w", err)
+		}
+	}
+
+	return tx.Commit()
+}
+
+// LikeComment applies a like or dislike to a comment from a user.
+func LikeComment(userID, commentID, likeType int) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("could not start transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(`DELETE FROM comment_likes WHERE user_id = ? AND comment_id = ?`, userID, commentID)
+	if err != nil {
+		return fmt.Errorf("could not remove existing comment like: %w", err)
+	}
+
+	if likeType == 1 || likeType == -1 {
+		_, err = tx.Exec(`INSERT INTO comment_likes (user_id, comment_id, type) VALUES (?, ?, ?)`, userID, commentID, likeType)
+		if err != nil {
+			return fmt.Errorf("could not insert new comment like: %w", err)
+		}
+	}
+
+	return tx.Commit()
+}
+
+// GetCommentByID retrieves a single comment by its ID, including like/dislike counts.
+func GetCommentByID(id int, currentUserID int) (*Comment, error) {
+	comment := &Comment{}
+	query := `
+		SELECT
+			c.id, c.user_id, c.post_id, c.rep_id, c.text, c.timestamp, u.username,
+			COALESCE(SUM(CASE WHEN cl.type = 1 THEN 1 ELSE 0 END), 0) AS likes,
+			COALESCE(SUM(CASE WHEN cl.type = -1 THEN 1 ELSE 0 END), 0) AS dislikes,
+			COALESCE((SELECT type FROM comment_likes WHERE user_id = ? AND comment_id = c.id), 0) AS user_choice
+		FROM post_message c
+		JOIN users u ON c.user_id = u.id
+		LEFT JOIN comment_likes cl ON c.id = cl.comment_id
+		WHERE c.id = ?
+		GROUP BY c.id`
+
+	err := db.QueryRow(query, currentUserID, id).Scan(
+		&comment.ID, &comment.AuthorID, &comment.PostID, &comment.ParentID,
+		&comment.Text, &comment.Timestamp, &comment.AuthorUsername,
+		&comment.Likes, &comment.Dislikes, &comment.UserChoice,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("could not get comment by id: %w", err)
+	}
+	return comment, nil
 }
