@@ -11,6 +11,8 @@ type PageData struct {
 	Posts            []db.Post
 	Notifications    []db.Notification
 	IsAuthenticated  bool
+	Post             db.Post
+	Comments         []db.Comment
 }
 
 type discoverPageData struct {

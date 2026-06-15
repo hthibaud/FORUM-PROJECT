@@ -253,11 +253,19 @@ func postView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	categories, err := db.GetCategories()
+	if err != nil {
+		utils.LogError("could not get categories", err)
+		serverError(w, r)
+		return
+	}
+
 	data := PageData{
 		Title:           post.Title,
 		IsAuthenticated: session.IsAuthenticated(r),
-		Post:            post,
+		Post:            *post,
 		Comments:        comments,
+		Categories:      categories,
 	}
 
 	utils.RenderTemplate(w, "post.html", data)
