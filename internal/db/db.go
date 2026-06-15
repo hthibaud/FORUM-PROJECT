@@ -137,6 +137,21 @@ func GetCategories() ([]Category, error) {
 	return categories, nil
 }
 
+// GetCategoryByID retrieves a single category by its ID.
+func GetCategoryByID(id int) (*Category, error) {
+	query := `SELECT id, name, desc FROM cat WHERE id = ?`
+	row := db.QueryRow(query, id)
+
+	category := &Category{}
+	if err := row.Scan(&category.ID, &category.Name, &category.Desc); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("could not get category by id: %w", err)
+	}
+	return category, nil
+}
+
 // -- User Functions --
 
 // CreateUser adds a new user to the database with a hashed password.

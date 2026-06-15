@@ -7,6 +7,8 @@ type PageData struct {
 	Title           string
 	Message         string
 	Categories      []db.Category
+	SelectedCategory *db.Category
+	Posts           []db.Post
 	IsAuthenticated bool
 }
 

@@ -2,19 +2,44 @@
 <main class="general-page">
     <div class="container">
         <div class="page-grid">
+            
             <aside class="sidebar">
                 <h2>Catégories</h2>
                 <div class="sidebar-menu">
                     {{range .Categories}}
-                        {{template "category-card" .}}
+                    {{template "category-card" .}}
                     {{end}}
                 </div>
             </aside>
 
             <section class="main-content">
-                <div class="panel">
-                    <h2>Zone de posts</h2>
-                    <p>Ici on pourra faire défiler les posts généraux qui traiteront de pleins de sujets divers.</p>
+                {{if .SelectedCategory}}
+                <div class="category-header content-title-white">
+                    <h1 class="category-title">{{.SelectedCategory.Name}}</h1>
+                    <p class="category-desc">{{.SelectedCategory.Desc}}</p>
+                </div>
+                {{else}}
+                <div class="category-header content-title-white">
+                    <h1 class="category-title">Zone de posts</h1>
+                    <p class="category-desc">Ici on pourra faire défiler les posts généraux qui traiteront de pleins de sujets divers.</p>
+                </div>
+                {{end}}
+
+                <div class="panel post-list-container">
+                    {{if .Posts}}
+                        <div class="post-list">
+                            {{range .Posts}}
+                            <div class="post-item">
+                                <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
+                                <p class="post-meta">Par <strong>{{.Author}}</strong> - {{.Timestamp.Format "02 Jan 2006"}}</p>
+                            </div>
+                            {{end}}
+                        </div>
+                    {{else}}
+                        <div class="empty-state">
+                            <p>Aucun post dans cette catégorie pour l’instant.</p>
+                        </div>
+                    {{end}}
                 </div>
             </section>
 
@@ -25,7 +50,9 @@
                         <h3>Récemment</h3>
                         <p>Leo67 a liké votre post.</p>
                     </a>
+                </div>
             </aside>
+            
         </div>
     </div>
 </main>
