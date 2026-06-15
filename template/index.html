@@ -26,18 +26,11 @@
     <section class="container">
         <h2>Discussions Récentes</h2>
         <div class="grid">
-            <div class="card">
-                <h3><a href="/topic/1">Comment bien débuter avec Go ?</a></h3>
-                <p>Par <strong>Gopher</strong> - Il y a 2 heures</p>
-            </div>
-            <div class="card">
-                <h3><a href="/topic/2">Partagez vos meilleurs setups !</a></h3>
-                <p>Par <strong>TechLover</strong> - Il y a 4 heures</p>
-            </div>
-            <div class="card">
-                <h3><a href="/topic/3">Problème de base de données sqlite3</a></h3>
-                <p>Par <strong>DevJunior</strong> - Il y a 1 jour</p>
-            </div>
+            {{range .Posts}}
+                {{template "post-card" .}}
+            {{else}}
+                <p>Aucune discussion récente pour le moment.</p>
+            {{end}}
         </div>
     </section>
 </main>

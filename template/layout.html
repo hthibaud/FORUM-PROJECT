@@ -18,7 +18,18 @@
                 <a href="/" class="nav-brand">ZiimForum</a>
                 <ul class="nav-links">
                     <li><a href="/">Accueil</a></li>
-                    <li><a href="/categories">Catégories</a></li>
+                    {{if .Categories}}
+                    <li class="dropdown">
+                        <a href="#nothing" class="dropdown-toggle">Catégories</a>
+                        <div class="dropdown-menu">
+                            {{range .Categories}}
+                                <a href="/category/{{.ID}}">{{.Name}}</a>
+                            {{end}}
+                        </div>
+                    </li>
+                    {{else}}
+                    <li><a href="/#nothing">Catégories</a></li>
+                    {{end}}
                 </ul>
                 <div class="nav-actions">
                     <button id="theme-toggle" class="btn-icon">
