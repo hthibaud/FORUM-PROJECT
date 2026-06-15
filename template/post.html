@@ -21,9 +21,17 @@
             <p>{{.Post.Text}}</p>
         </div>
 
-        <footer class="post-footer">
-            <button class="btn-action"><img src="/static/icon/coeur.png" alt="Like"></button>
-            <button class="btn-action"><img src="/static/icon/republier.png" alt="Like"></button>
+        <footer class="post-actions">
+            <button class="like-btn btn-action {{if eq .Post.UserChoice 1}}liked{{end}}" data-post-id="{{.Post.ID}}" data-action="1">
+                <img class="icon-default" src="/static/icon/coeur.png" alt="Like">
+                <img class="icon-active" src="/static/icon/coeur_plein_dessin.png" alt="Liked">
+            </button>
+            <span class="likes-count">{{.Post.Likes}}</span>
+            <button class="dislike-btn btn-action {{if eq .Post.UserChoice -1}}disliked{{end}}" data-post-id="{{.Post.ID}}" data-action="-1">
+                <img class="icon-default" src="/static/icon/coeur.png" alt="Dislike">
+                <img class="icon-active" src="/static/icon/coeur_plein_dessin.png" alt="Disliked">
+            </button>
+            <span class="dislikes-count">{{.Post.Dislikes}}</span>
         </footer>
     </article>
 
