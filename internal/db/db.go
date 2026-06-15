@@ -233,18 +233,22 @@ func DeleteExpiredSessions() error {
 // -- Post Functions --
 
 // CreatePost adds a new post to the database.
-func CreatePost(authorID, categoryID int, title, text string) error {
+func CreatePost(authorID, categoryID int, title, text string) (int64, error) {
 	dataUUID, err := utils.GenerateUUID() // Assuming you have a UUID generator
 	if err != nil {
-		return fmt.Errorf("could not generate UUID for post: %w", err)
+		return 0, fmt.Errorf("could not generate UUID for post: %w", err)
 	}
 
 	query := `INSERT INTO post (author, category_id, title, text, data_uuid) VALUES (?, ?, ?, ?, ?)`
-	_, err = db.Exec(query, authorID, categoryID, title, text, dataUUID)
+	result, err := db.Exec(query, authorID, categoryID, title, text, dataUUID)
 	if err != nil {
-		return fmt.Errorf("could not create post: %w", err)
+		return 0, fmt.Errorf("could not create post: %w", err)
 	}
-	return nil
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("could not retrieve last insert ID: %w", err)
+	}
+	return id, nil
 }
 
 // GetPostByID retrieves a single post by its ID, including the author's username.
