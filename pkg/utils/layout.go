@@ -7,10 +7,34 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strings"
 )
 
 // templates is a map that will cache all parsed templates.
 var templates = make(map[string]*template.Template)
+
+var funcMap = template.FuncMap{
+	"initial": func(s string) string {
+		if len(s) > 0 {
+			return strings.ToUpper(string([]rune(s)[0]))
+		}
+		return ""
+	},
+	"dict": func(values ...interface{}) (map[string]interface{}, error) {
+		if len(values)%2 != 0 {
+			return nil, errors.New("invalid dict call")
+		}
+		dict := make(map[string]interface{}, len(values)/2)
+		for i := 0; i < len(values); i += 2 {
+			key, ok := values[i].(string)
+			if !ok {
+				return nil, errors.New("dict keys must be strings")
+			}
+			dict[key] = values[i+1]
+		}
+		return dict, nil
+	},
+}
 
 // LoadTemplates finds all page templates, component templates, and the main layout,
 // parses them together, and caches them for reuse. This function should be called
@@ -38,7 +62,7 @@ func LoadTemplates() {
 
 		// Create and parse the template set.
 		// We use New(name) to be able to refer to this specific template set later.
-		ts, err := template.New(name).ParseFiles(files...)
+		ts, err := template.New(name).Funcs(funcMap).ParseFiles(files...)
 		if err != nil {
 			LogFatal(fmt.Sprintf("Failed to parse template %s", name), err)
 		}
