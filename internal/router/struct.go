@@ -12,7 +12,7 @@ type PageData struct {
 	Notifications    []db.Notification
 	IsAuthenticated  bool
 	Post             db.Post
-	Comments         []db.Comment
+	Comments         []*db.Comment
 }
 
 type discoverPageData struct {

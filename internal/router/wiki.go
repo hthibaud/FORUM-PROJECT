@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -246,11 +247,29 @@ func postView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	comments, err := db.GetCommentsByPostID(id)
+	comments, err := db.GetCommentsForPost(id)
 	if err != nil {
 		utils.LogError("Error retrieving comments", err)
 		serverError(w, r)
 		return
+	}
+
+	// Organiser les commentaires en une structure hiérarchique
+	commentMap := make(map[int]*db.Comment)
+	for i := range comments {
+		commentMap[comments[i].ID] = &comments[i]
+	}
+
+	var rootComments []*db.Comment
+	for i := range comments {
+		comment := &comments[i]
+		if comment.ParentID.Valid {
+			if parent, ok := commentMap[int(comment.ParentID.Int64)]; ok {
+				parent.Replies = append(parent.Replies, comment)
+			}
+		} else {
+			rootComments = append(rootComments, comment)
+		}
 	}
 
 	categories, err := db.GetCategories()
@@ -264,7 +283,7 @@ func postView(w http.ResponseWriter, r *http.Request) {
 		Title:           post.Title,
 		IsAuthenticated: session.IsAuthenticated(r),
 		Post:            *post,
-		Comments:        comments,
+		Comments:        rootComments,
 		Categories:      categories,
 	}
 
@@ -390,8 +409,24 @@ func handleCommentSubmission(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	parentIDStr := r.FormValue("parent_id")
+	var parentID sql.NullInt64
+	if parentIDStr != "" {
+		pID, err := strconv.Atoi(parentIDStr)
+		if err == nil {
+			parentID = sql.NullInt64{Int64: int64(pID), Valid: true}
+		}
+	}
+
 	// Create comment in database
-	err = db.CreateComment(user.ID, postID, sql.NullInt64{}, commentText)
+	comment := db.Comment{
+		AuthorID:  user.ID,
+		PostID:    postID,
+		ParentID:  parentID,
+		Text:      commentText,
+		Timestamp: time.Now(),
+	}
+	err = db.CreateComment(comment)
 	if err != nil {
 		utils.LogError("Failed to create comment in database", err)
 		serverError(w, r)
