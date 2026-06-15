@@ -214,6 +214,63 @@ body {
             border-bottom-color: var(--accent-primary);
         }
 
+        .nav-links li {
+            position: relative; /* Base pour le positionnement du menu déroulant */
+        }
+
+        .dropdown-toggle::after {
+            content: ' ▾';
+            font-size: 0.8em;
+            display: inline-block;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        /* Fait tourner la flèche au survol/ouverture */
+        .dropdown:hover .dropdown-toggle::after,
+        .dropdown.active .dropdown-toggle::after {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: var(--bg-surface);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-md);
+            min-width: 220px;
+            z-index: 1000;
+            padding: var(--space-sm) 0;
+            border: 1px solid var(--bg-deep);
+            list-style: none; /* Assurez-vous qu'il n'y a pas de puces */
+            margin: 0;
+        }
+        
+        .dropdown-menu a {
+            display: block;
+            padding: var(--space-sm) var(--space-md);
+            white-space: nowrap;
+            border-bottom: none; /* Annule le style de bordure des liens de la nav */
+        }
+
+        .dropdown-menu a:hover {
+            background-color: var(--bg-surface-hover);
+            border-bottom: none; /* Assure qu'il n'y a pas de bordure au survol */
+        }
+
+        /* Affiche le menu au survol sur les grands écrans */
+        @media (min-width: 769px) {
+            .dropdown:hover .dropdown-menu {
+                display: block;
+            }
+        }
+        
+        /* Affiche le menu si la classe 'active' est présente (pour le clic mobile) */
+        .dropdown-menu.active {
+            display: block;
+        }
+
         .nav-actions {
             display: flex;
             align-items: center;
@@ -726,4 +783,65 @@ footer {
     .btn, .btn-outline { width: 100%; margin-left: 0; }
     .grid { grid-template-columns: 1fr; }
     .page-grid { grid-template-columns: 1fr; }
+}
+
+/* --- Like/Dislike Actions --- */
+.post-actions, .comment-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Ajustez l'espacement comme vous le souhaitez */
+}
+
+.post-actions {
+    padding-top: var(--space-md);
+    margin-top: var(--space-md);
+    border-top: 1px solid var(--bg-deep);
+}
+
+.like-btn, .dislike-btn {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.like-btn:hover, .dislike-btn:hover {
+    background-color: var(--bg-deep);
+}
+
+.like-btn img, .dislike-btn img {
+    width: 24px;
+    height: 24px;
+}
+
+/* Logique d'affichage des icônes */
+.like-btn .icon-active, .dislike-btn .icon-active { display: none; }
+.like-btn .icon-default, .dislike-btn .icon-default { display: block; }
+
+.like-btn.liked .icon-active, .dislike-btn.disliked .icon-active { display: block; }
+.like-btn.liked .icon-default, .dislike-btn.disliked .icon-default { display: none; }
+
+/* Rotation pour l'icône Dislike */
+.dislike-btn img {
+    transform: rotate(180deg);
+}
+
+.likes-count, .dislikes-count {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    min-width: 1.5ch; /* Empêche le décalage quand le nombre change */
+}
+
+/* Ajustement de la couleur pour les boutons actifs */
+.like-btn.liked {
+    filter: brightness(0) saturate(100%) invert(80%) sepia(10%) saturate(1000%) hue-rotate(120deg);
+}
+
+.dislike-btn.disliked {
+    filter: brightness(0) saturate(100%) invert(60%) sepia(50%) saturate(1000%) hue-rotate(320deg);
 }
