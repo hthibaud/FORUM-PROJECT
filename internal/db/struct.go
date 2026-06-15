@@ -55,3 +55,10 @@ type Comment struct {
 	Timestamp      time.Time
 	AuthorUsername string // Username of the author
 }
+
+// Notification represents a user notification.
+type Notification struct {
+	ID      int
+	Title   string
+	Message string
+}

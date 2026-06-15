@@ -1,12 +1,17 @@
 {{define "page"}}
 <main>
+
     <section class="hero container">
         <h1>Bienvenue sur ZiimForum!</h1>
         <p>Rejoignez la discussion, partagez vos connaissances et trouvez des réponses.</p>
+            {{if .IsAuthenticated}}
+            
+            {{else}}
         <div>
             <a href="/register" class="btn">S'inscrire</a>
             <a href="/login" class="btn btn-outline">Se connecter</a>
         </div>
+        {{end}}
     </section>
 
     <section class="container">

@@ -97,13 +97,13 @@ func loadCategories() bool {
 		err := db.QueryRow("SELECT 1 FROM cat WHERE name = ?", name).Scan(&exists)
 
 		if err != nil && err != sql.ErrNoRows {
-			utils.LogError(fmt.Sprintf("Error checking if category '%s' exists: %v", name), err)
+			utils.LogError(fmt.Sprintf("Error checking if category '%s' exists: %v", name, err), err)
 			return false
 		}
 
 		if err == sql.ErrNoRows {
 			if _, err := db.Exec("INSERT INTO cat (name, desc) VALUES (?, ?)", name, desc); err != nil {
-				utils.LogError(fmt.Sprintf("Error inserting category '%s': %v", name), err)
+				utils.LogError(fmt.Sprintf("Error inserting category '%s': %v", name, err), err)
 				return false
 			} else {
 				utils.Debug(fmt.Sprintf("Category '%s' inserted.", name))
@@ -135,6 +135,21 @@ func GetCategories() ([]Category, error) {
 	}
 
 	return categories, nil
+}
+
+// GetCategoryByID retrieves a single category by its ID.
+func GetCategoryByID(id int) (*Category, error) {
+	query := `SELECT id, name, desc FROM cat WHERE id = ?`
+	row := db.QueryRow(query, id)
+
+	category := &Category{}
+	if err := row.Scan(&category.ID, &category.Name, &category.Desc); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("could not get category by id: %w", err)
+	}
+	return category, nil
 }
 
 // -- User Functions --
