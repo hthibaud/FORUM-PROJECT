@@ -4,7 +4,11 @@ import (
 	"Forum/internal/db"
 	"Forum/internal/session"
 	"Forum/pkg/utils"
+	"database/sql"
+	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -153,4 +157,184 @@ func logout(w http.ResponseWriter, r *http.Request) {
 
 func general(w http.ResponseWriter, r *http.Request) {
 	utils.RenderTemplate(w, "general.html", nil)
+}
+
+func postView(w http.ResponseWriter, r *http.Request) {
+	if strings.HasSuffix(r.URL.Path, "/comment") && r.Method == http.MethodPost {
+		handleCommentSubmission(w, r)
+		return
+	}
+
+	idStr := strings.TrimPrefix(r.URL.Path, "/post/")
+	if idStr == "" {
+		http.NotFound(w, r)
+		return
+	}
+
+	// Convert idStr to int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		utils.LogError("Invalid post id", err)
+		http.NotFound(w, r)
+		return
+	}
+
+	post, err := db.GetPostByID(id)
+	if err != nil {
+		utils.LogError("Error retrieving post", err)
+		serverError(w, r)
+		return
+	}
+
+	if post == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	comments, err := db.GetCommentsByPostID(id)
+	if err != nil {
+		utils.LogError("Error retrieving comments", err)
+		serverError(w, r)
+		return
+	}
+
+	data := PageData{
+		Title:           post.Title,
+		IsAuthenticated: session.IsAuthenticated(r),
+		Post:            post,
+		Comments:        comments,
+	}
+
+	utils.RenderTemplate(w, "post.html", data)
+}
+
+func createPost(w http.ResponseWriter, r *http.Request) {
+	utils.Debug("Accessing create post page")
+	if !session.IsAuthenticated(r) {
+		utils.Debug("User not authenticated, redirecting to login")
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		utils.Debug("Displaying create post form")
+		categories, err := db.GetCategories()
+		if err != nil {
+			utils.LogError("could not get categories", err)
+			serverError(w, r)
+			return
+		}
+
+		data := PageData{
+			Title:           "Create a new post",
+			IsAuthenticated: true,
+			Categories:      categories,
+		}
+		utils.RenderTemplate(w, "create_post.html", data)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		utils.Debug("Handling post creation form submission")
+		err := r.ParseForm()
+		if err != nil {
+			serverError(w, r)
+			return
+		}
+
+		title := r.FormValue("title")
+		text := r.FormValue("content")
+		categoryIDStr := r.FormValue("category_id")
+		utils.Debug(fmt.Sprintf("Form values: title='%s', category_id='%s'", title, categoryIDStr))
+
+		if title == "" || text == "" || categoryIDStr == "" {
+			utils.Debug("Missing fields in create post form")
+			http.Redirect(w, r, "/post/create?error=missing_fields", http.StatusSeeOther)
+			return
+		}
+
+		categoryID, err := strconv.Atoi(categoryIDStr)
+		if err != nil {
+			utils.Debug("Invalid category ID")
+			http.Redirect(w, r, "/post/create?error=invalid_category", http.StatusSeeOther)
+			return
+		}
+
+		user, err := session.GetUserFromSession(r)
+		if err != nil {
+			// This case is for database errors etc.
+			utils.LogError("an unexpected error occurred getting user from session", err)
+			serverError(w, r)
+			return
+		}
+		if user == nil {
+			// This case is for no session/invalid session
+			utils.Debug("GetUserFromSession returned no user, redirecting to login")
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+		utils.Debug(fmt.Sprintf("Creating post for user: %s (ID: %d)", user.Username, user.ID))
+
+		postID, err := db.CreatePost(user.ID, categoryID, title, text)
+		if err != nil {
+			utils.LogError("could not create post", err)
+			serverError(w, r)
+			return
+		}
+		utils.Debug(fmt.Sprintf("Post created successfully with ID: %d", postID))
+
+		http.Redirect(w, r, fmt.Sprintf("/post/%d", postID), http.StatusSeeOther)
+	}
+}
+
+func handleCommentSubmission(w http.ResponseWriter, r *http.Request) {
+	utils.Debug("Handling comment submission")
+
+	// Extract Post ID from URL
+	idStr := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/post/"), "/comment")
+	postID, err := strconv.Atoi(idStr)
+	if err != nil {
+		utils.LogError("Invalid post ID in comment submission", err)
+		http.NotFound(w, r)
+		return
+	}
+	utils.Debug(fmt.Sprintf("Comment submission for post ID: %d", postID))
+
+	// Check if user is authenticated
+	user, err := session.GetUserFromSession(r)
+	if err != nil {
+		utils.LogError("Error getting user from session for comment", err)
+		serverError(w, r)
+		return
+	}
+	if user == nil {
+		utils.Debug("Unauthenticated user tried to comment, redirecting to login")
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	utils.Debug(fmt.Sprintf("User '%s' (ID: %d) is submitting a comment", user.Username, user.ID))
+
+	// Parse form and get comment text
+	if err := r.ParseForm(); err != nil {
+		utils.LogError("Error parsing comment form", err)
+		serverError(w, r)
+		return
+	}
+	commentText := r.FormValue("comment")
+	if commentText == "" {
+		utils.Debug("Comment submission is empty")
+		http.Redirect(w, r, fmt.Sprintf("/post/%d", postID), http.StatusSeeOther)
+		return
+	}
+
+	// Create comment in database
+	err = db.CreateComment(user.ID, postID, sql.NullInt64{}, commentText)
+	if err != nil {
+		utils.LogError("Failed to create comment in database", err)
+		serverError(w, r)
+		return
+	}
+	utils.Debug(fmt.Sprintf("Successfully created comment for post %d by user %d", postID, user.ID))
+
+	http.Redirect(w, r, fmt.Sprintf("/post/%d", postID), http.StatusSeeOther)
 }

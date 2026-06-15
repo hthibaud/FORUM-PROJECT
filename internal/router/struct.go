@@ -8,6 +8,8 @@ type PageData struct {
 	Message         string
 	Categories      []db.Category
 	IsAuthenticated bool
+	Post            *db.Post
+	Comments        []db.Comment
 }
 
 type discoverPageData struct {
