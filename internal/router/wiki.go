@@ -150,3 +150,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	session.DeleteSession(w, r)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
+func general(w http.ResponseWriter, r *http.Request) {
+	utils.RenderTemplate(w, "general.html", nil)
+}
