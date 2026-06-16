@@ -54,6 +54,7 @@ func Start() {
 	mux.Handle("/like/post", checkBannedStatus(http.HandlerFunc(handlePostLike)))
 	mux.Handle("/like/comment", checkBannedStatus(http.HandlerFunc(handleCommentLike)))
 	mux.Handle("/report", checkBannedStatus(http.HandlerFunc(reportContent)))
+	mux.Handle("/notifications/read", checkBannedStatus(http.HandlerFunc(readNotifications)))
 
 	// Moderation handlers are wrapped in both middlewares.
 	mux.Handle("/moderation", checkBannedStatus(isModerator(http.HandlerFunc(moderationPage))))
