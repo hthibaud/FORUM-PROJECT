@@ -81,8 +81,17 @@ html {
 body {
             font-family: var(--font-sans);
             background-color: var(--bg-base);
+            background-image: url('/static/background/DarkTemeForum.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: scroll;
             color: var(--text-main);
             line-height: 1.6;
+        }
+
+html[data-theme="light"] body {
+            background-image: url('/static/background/LightTheme Forum.png');
         }
 
         /* --- TYPOGRAPHIE --- */

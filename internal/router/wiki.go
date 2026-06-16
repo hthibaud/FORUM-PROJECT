@@ -356,6 +356,7 @@ func postView(w http.ResponseWriter, r *http.Request) {
 	data := newAuthenticatedPageData(r)
 	data.Title = post.Title
 	data.Post = *post
+	data.User = *user
 	data.Comments = rootComments
 	data.Categories = categories
 
