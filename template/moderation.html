@@ -1,39 +1,58 @@
 {{template "layout" .}}
 
 {{define "page"}}
-<div class="container">
-    <h1>Espace Modérateur</h1>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Rapporté par</th>
-                <th>Type</th>
-                <th>Contenu ID</th>
-                <th>Raison</th>
-                <th>Statut</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{range .Reports}}
-            <tr>
-                <td>{{.ReporterName}}</td>
-                <td><a href="/post/{{.ContentID}}" target="_blank">{{.ContentType}} #{{.ContentID}}</a></td>
-                <td>{{.ContentID}}</td>
-                <td>{{.Reason}}</td>
-                <td><span class="status-{{.Status}}">{{.Status}}</span></td>
-                <td>
-                    {{if eq .Status "pending"}}
-                        <a href="/moderation/handle/delete/{{.ID}}" class="btn btn-danger btn-sm">Supprimer & Traiter</a>
-                        <a href="/moderation/handle/dismiss/{{.ID}}" class="btn btn-secondary btn-sm">Rejeter</a>
-                        <a href="/moderation/ban/{{.ContentAuthorID}}" class="btn btn-warning btn-sm">Bannir l'auteur</a>
-                    {{else}}
-                        <span class="text-muted">Traité</span>
-                    {{end}}
-                </td>
-            </tr>
-            {{end}}
-        </tbody>
-    </table>
-</div>
+<main class="container">
+    <div class="moderation-header">
+        <h1>Espace Modérateur</h1>
+    </div>
+    
+    {{if .Reports}}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Rapporté par</th>
+                    <th>Contenu</th>
+                    <th>Raison</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Reports}}
+                <tr>
+                    <td><strong>{{.ReporterName}}</strong></td>
+                    <td>
+                        {{if eq .ContentType "post"}}
+                            <a href="/post/{{.ContentID}}" target="_blank">Post #{{.ContentID}}</a>
+                        {{else if eq .ContentType "comment"}}
+                            <a href="/post/{{.ParentPostID}}#comment-{{.ContentID}}" target="_blank">Commentaire #{{.ContentID}}</a>
+                        {{else}}
+                            {{.ContentType}} #{{.ContentID}}
+                        {{end}}
+                    </td>
+                    <td><div class="report-reason" title="{{.Reason}}">{{.Reason}}</div></td>
+                    <td><span class="status-badge status-{{.Status}}">{{.Status}}</span></td>
+                    <td>
+                        <div class="moderation-actions">
+                            {{if eq .Status "pending"}}
+                                <a href="/moderation/handle/delete/{{.ID}}" class="btn btn-danger btn-sm" title="Supprimer le contenu et marquer comme résolu">Supprimer contenu</a>
+                                <a href="/moderation/handle/dismiss/{{.ID}}" class="btn btn-secondary btn-sm" title="Ignorer le signalement">Ignorer</a>
+                                <a href="/moderation/ban/{{.ContentAuthorID}}" class="btn btn-warning btn-sm" title="Bannir cet utilisateur du forum">Bannir auteur</a>
+                            {{else}}
+                                <span class="text-muted" style="font-style: italic;">Déjà traité</span>
+                            {{end}}
+                        </div>
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+    {{else}}
+    <div class="no-comments-card">
+        <p style="font-size: 1.2rem; margin-bottom: 0;">🎉 Super ! Il n'y a aucun signalement en attente de modération.</p>
+    </div>
+    {{end}}
+</main>
 {{end}}

@@ -30,7 +30,7 @@
         </button>
         {{if $.Page.IsAuthenticated}}
         <button class="btn-action btn-report-toggle" data-comment-id="{{.Comment.ID}}" title="Signaler ce commentaire">
-            🚩
+            <img class="icon-default" src="/static/icon/signalement.png" alt="Report" style="color: rgb(255, 40, 40);">
         </button>
         {{if or (eq $.Page.User.Role "moderator") (eq $.Page.User.Role "admin")}}
         <form action="/moderation/delete/comment/{{.Comment.ID}}" method="post" style="display:inline;">
