@@ -357,7 +357,7 @@ html[data-theme="light"] body {
 
         .card {
             display: block;
-            min-width: 23rem;
+            width: 100%;
             max-width: 23rem;
             min-height: 12rem;
             max-height: 12rem;
@@ -378,7 +378,7 @@ html[data-theme="light"] body {
 
         .general-card {
             display: block;
-            min-width: 15rem;
+            width: 100%;
             max-width: 15rem;
             height: auto;
             background-color: var(--bg-surface);
@@ -678,7 +678,7 @@ footer {
     margin-top: var(--space-lg);
 }
 .post-header { margin-bottom: var(--space-md); }
-.post-author-info { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); }
+.post-author-info { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); flex-wrap: wrap; }
 .post-author-name { font-weight: 700; color: var(--text-main); }
 .post-meta { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
 .post-full h1 { margin-bottom: 0; font-size: 2.8rem; }
@@ -715,12 +715,14 @@ footer {
 }
 .form-group { margin-bottom: var(--space-md); }
 .form-group label { display: block; margin-bottom: var(--space-sm); font-weight: 600; }
-.form-group textarea {
+.form-group textarea, .form-input, .form-group input[type="text"], .form-group input[type="password"], .form-group input[type="email"], .form-group select {
     width: 100%; background-color: var(--bg-base); color: var(--text-main);
     border: 1px solid var(--bg-deep); border-radius: var(--radius-sm); padding: 0.8rem;
     transition: all 0.3s;
+    font-family: inherit;
+    font-size: 1rem;
 }
-.form-group textarea:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(136, 183, 187, 0.3); }
+.form-group textarea:focus, .form-input:focus, .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(136, 183, 187, 0.3); }
 .auth-prompt { padding: var(--space-md); text-align: center; background-color: var(--bg-surface); border-radius: var(--radius-md); }
 .comments-list { display: flex; flex-direction: column; gap: var(--space-md); }
 
@@ -732,7 +734,7 @@ footer {
 .comment-card:hover {
     transform: none; /* Reset general card styles */
 }
-.comment-header { display: flex; align-items: center; gap: var(--space-md); }
+.comment-header { display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap; }
 .comment-header .avatar-placeholder { width: 40px; height: 40px; font-size: 1.2rem; }
 .comment-author-name { font-weight: 700; color: var(--text-main); }
 .comment-meta { font-size: 0.9rem; color: var(--text-muted); }
@@ -777,6 +779,10 @@ footer {
 .no-comments-card { padding: var(--space-lg); text-align: center; background-color: var(--bg-surface); border-radius: var(--radius-md); color: var(--text-muted); }
 
 /* RESPONSIVE & ADAPTABILITÉ GÉNÉRALE */
+@media (max-width: 64rem) {
+    .page-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 48rem) {
     :root {
         --space-md: 1.2rem;
@@ -804,7 +810,6 @@ footer {
     .hero div { display: flex; flex-direction: column; gap: var(--space-sm); }
     .btn, .btn-outline { width: 100%; margin-left: 0; }
     .grid { grid-template-columns: 1fr; }
-    .page-grid { grid-template-columns: 1fr; }
 }
 
 /* Profile activity cards: ensure they display responsively and override
@@ -896,7 +901,8 @@ footer {
 .post-actions, .comment-footer {
     display: flex;
     align-items: center;
-    gap: 0.5rem; /* Ajustez l'espacement comme vous le souhaitez */
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .post-actions {
@@ -1096,6 +1102,7 @@ footer {
 
 .notif-menu {
     width: 300px;
+    max-width: calc(100vw - 2rem);
     max-height: 400px;
     overflow-y: auto;
     padding: var(--space-sm);
@@ -1172,4 +1179,106 @@ footer {
     line-height: 1.6;
     font-size: 0.95rem;
     color: var(--text-muted);
+}
+
+/* --- AMÉLIORATIONS RESPONSIVE MOBILES --- */
+@media (max-width: 48rem) {
+    /* Navbar actions buttons on mobile */
+    .nav-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+    }
+    
+    .nav-actions .btn, .nav-actions .btn-outline {
+        flex: 1 1 100%;
+        text-align: center;
+        padding: 0.8rem;
+        font-size: 1rem;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    .nav-actions > .btn-icon, .nav-actions > .dropdown {
+        flex: 0 0 auto;
+        margin-bottom: 0.5rem;
+    }
+
+    .dropdown-menu:not(.notif-menu) {
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+    }
+
+    /* Convert tables into cards for smaller screens */
+    .table-responsive {
+        background-color: transparent;
+        padding: 0;
+        box-shadow: none;
+    }
+    
+    .table, .table tbody, .table tr, .table td {
+        display: block;
+        width: 100%;
+    }
+    
+    .table thead {
+        display: none;
+    }
+    
+    .table tr {
+        margin-bottom: var(--space-md);
+        background-color: var(--bg-surface);
+        padding: var(--space-md);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .table td {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed var(--bg-deep);
+    }
+    
+    .table td:last-child {
+        border-bottom: none;
+    }
+    
+    .table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--accent-primary);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .moderation-actions {
+        flex-direction: column;
+        width: 100%;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .moderation-actions > a,
+    .moderation-actions .btn,
+    .moderation-actions .btn-danger,
+    .moderation-actions .btn-warning,
+    .moderation-actions .btn-secondary {
+        width: 100%;
+        text-align: center;
+        margin: 0;
+        box-sizing: border-box;
+        display: block;
+    }
+
+    .report-reason {
+        max-width: 100%;
+    }
 }

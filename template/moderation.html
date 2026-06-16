@@ -21,8 +21,8 @@
             <tbody>
                 {{range .Reports}}
                 <tr>
-                    <td><strong>{{.ReporterName}}</strong></td>
-                    <td>
+                    <td data-label="Rapporté par"><strong>{{.ReporterName}}</strong></td>
+                    <td data-label="Contenu">
                         {{if eq .ContentType "post"}}
                             <a href="/post/{{.ContentID}}" target="_blank">Post #{{.ContentID}}</a>
                         {{else if eq .ContentType "comment"}}
@@ -31,9 +31,9 @@
                             {{.ContentType}} #{{.ContentID}}
                         {{end}}
                     </td>
-                    <td><div class="report-reason" title="{{.Reason}}">{{.Reason}}</div></td>
-                    <td><span class="status-badge status-{{.Status}}">{{.Status}}</span></td>
-                    <td>
+                    <td data-label="Raison"><div class="report-reason" title="{{.Reason}}">{{.Reason}}</div></td>
+                    <td data-label="Statut"><span class="status-badge status-{{.Status}}">{{.Status}}</span></td>
+                    <td data-label="Actions">
                         <div class="moderation-actions">
                             {{if eq .Status "pending"}}
                                 <a href="/moderation/handle/delete/{{.ID}}" class="btn btn-danger btn-sm" title="Supprimer le contenu et marquer comme résolu">Supprimer contenu</a>
