@@ -33,7 +33,7 @@
             <span class="dislikes-count">{{.Post.Dislikes}}</span>
             {{if .IsAuthenticated}}
             <button class="btn-action btn-report-toggle" data-post-id="{{.Post.ID}}" title="Signaler ce post">
-                🚩
+                <img class="icon-default" src="/static/icon/signalement.png" alt="Report" style="color: rgb(255, 40, 40);">
             </button>
             {{if or (eq .User.Role "moderator") (eq .User.Role "admin")}}
             <form action="/moderation/delete/post/{{.Post.ID}}" method="post" style="display:inline;">
