@@ -132,6 +132,20 @@ func register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Vérifier si l'email est déjà utilisé
+		existingEmailUser, err := db.GetUserByEmail(email)
+		if err != nil {
+			utils.LogError("Erreur lors de la vérification de l'email", err)
+			serverError(w, r)
+			return
+		}
+		if existingEmailUser != nil {
+			utils.Debug("Email already in use: " + email)
+			data.Message = "Cette adresse e-mail est déjà utilisée"
+			utils.RenderTemplate(w, "register.html", data)
+			return
+		}
+
 		// Créer l'utilisateur
 		err = db.CreateUser(username, password, email)
 		if err != nil {
