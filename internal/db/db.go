@@ -452,6 +452,24 @@ func CreateComment(comment Comment) error {
 	if err != nil {
 		return fmt.Errorf("could not create comment: %w", err)
 	}
+
+	// Trigger Notification
+	if comment.ParentID.Valid {
+		// Notify the parent comment author
+		var parentAuthorID int
+		err = db.QueryRow("SELECT user_id FROM post_message WHERE id = ?", comment.ParentID.Int64).Scan(&parentAuthorID)
+		if err == nil {
+			CreateNotification(parentAuthorID, comment.AuthorID, sql.NullInt64{Int64: int64(comment.PostID), Valid: true}, "a répondu à votre commentaire")
+		}
+	} else {
+		// Notify the post author
+		var postAuthorID int
+		err = db.QueryRow("SELECT author FROM post WHERE id = ?", comment.PostID).Scan(&postAuthorID)
+		if err == nil {
+			CreateNotification(postAuthorID, comment.AuthorID, sql.NullInt64{Int64: int64(comment.PostID), Valid: true}, "a commenté votre post")
+		}
+	}
+
 	return nil
 }
 
@@ -597,6 +615,16 @@ func LikePost(userID, postID, likeType int) error {
 		if err != nil {
 			return fmt.Errorf("could not insert new post like: %w", err)
 		}
+
+		// Notify post author if it's a like
+		if likeType == 1 {
+			var postAuthorID int
+			errQuery := tx.QueryRow("SELECT author FROM post WHERE id = ?", postID).Scan(&postAuthorID)
+			if errQuery == nil && postAuthorID != userID {
+				// Create a notification immediately using the transaction
+				_, _ = tx.Exec(`INSERT INTO notifications (user_id, actor_id, post_id, message) VALUES (?, ?, ?, ?)`, postAuthorID, userID, postID, "a aimé votre post")
+			}
+		}
 	}
 
 	return tx.Commit()
@@ -619,6 +647,16 @@ func LikeComment(userID, commentID, likeType int) error {
 		_, err = tx.Exec(`INSERT INTO comment_likes (user_id, comment_id, type) VALUES (?, ?, ?)`, userID, commentID, likeType)
 		if err != nil {
 			return fmt.Errorf("could not insert new comment like: %w", err)
+		}
+
+		// Notify comment author if it's a like
+		if likeType == 1 {
+			var commentAuthorID int
+			var postID int
+			errQuery := tx.QueryRow("SELECT user_id, post_id FROM post_message WHERE id = ?", commentID).Scan(&commentAuthorID, &postID)
+			if errQuery == nil && commentAuthorID != userID {
+				_, _ = tx.Exec(`INSERT INTO notifications (user_id, actor_id, post_id, message) VALUES (?, ?, ?, ?)`, commentAuthorID, userID, postID, "a aimé votre commentaire")
+			}
 		}
 	}
 
@@ -732,6 +770,51 @@ func UnbanUser(userID int) error {
 		return fmt.Errorf("could not unban user: %w", err)
 	}
 	return nil
+}
+
+// CreateNotification creates a new notification for a user.
+func CreateNotification(userID, actorID int, postID sql.NullInt64, message string) error {
+	// Don't notify oneself
+	if userID == actorID {
+		return nil
+	}
+	query := `INSERT INTO notifications (user_id, actor_id, post_id, message) VALUES (?, ?, ?, ?)`
+	_, err := db.Exec(query, userID, actorID, postID, message)
+	return err
+}
+
+// GetUnreadNotifications retrieves unread notifications for a specific user.
+func GetUnreadNotifications(userID int) ([]Notification, error) {
+	query := `
+		SELECT n.id, n.user_id, n.actor_id, u.username as actor_name, n.post_id, n.message, n.is_read, n.created_at
+		FROM notifications n
+		JOIN users u ON n.actor_id = u.id
+		WHERE n.user_id = ? AND n.is_read = 0
+		ORDER BY n.created_at DESC`
+	rows, err := db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var notifications []Notification
+	for rows.Next() {
+		var n Notification
+		var isRead int
+		if err := rows.Scan(&n.ID, &n.UserID, &n.ActorID, &n.ActorName, &n.PostID, &n.Message, &isRead, &n.CreatedAt); err != nil {
+			return nil, err
+		}
+		n.IsRead = isRead == 1
+		notifications = append(notifications, n)
+	}
+	return notifications, rows.Err()
+}
+
+// MarkNotificationsAsRead marks all notifications as read for a user.
+func MarkNotificationsAsRead(userID int) error {
+	query := `UPDATE notifications SET is_read = 1 WHERE user_id = ?`
+	_, err := db.Exec(query, userID)
+	return err
 }
 
 // DeletePost deletes a post and its associated likes and comments.
