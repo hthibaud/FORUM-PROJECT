@@ -72,27 +72,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Dropdown Menu Logic for Mobile ---
-    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
-        toggle.addEventListener('click', event => {
-            // Uniquement pour les écrans tactiles/petits
-            if (window.innerWidth < 769) {
+    // --- Dropdown Menu Logic ---
+    document.body.addEventListener('click', event => {
+        const toggle = event.target.closest('.dropdown-toggle');
+        
+        // Si on clique sur un toggle
+        if (toggle) {
+            // Uniquement pour les écrans tactiles/petits OU pour le bouton de notification (qui marche partout)
+            if (window.innerWidth < 769 || toggle.id === 'notif-btn') {
                 event.preventDefault(); // Empêche la navigation
                 
                 const menu = toggle.nextElementSibling;
-                if (menu && menu.classList.contains('dropdown-menu')) {
-                    menu.classList.toggle('active');
-                    toggle.parentElement.classList.toggle('active');
-                }
-            }
-        });
-    });
+                const isActive = menu && menu.classList.contains('active');
+                
+                // On ferme tous les autres menus d'abord
+                document.querySelectorAll('.dropdown-menu.active').forEach(m => {
+                    m.classList.remove('active');
+                    if(m.parentElement) m.parentElement.classList.remove('active');
+                });
 
-    window.addEventListener('click', function(e) {
-        if (!e.target.matches('.dropdown-toggle')) {
+                // Puis on ouvre celui-ci s'il n'était pas déjà ouvert
+                if (menu && !isActive) {
+                    menu.classList.add('active');
+                    toggle.parentElement.classList.add('active');
+                }
+                return; // On arrête là
+            }
+        }
+
+        // Si on a cliqué n'importe où ailleurs (pas sur un toggle ni à l'intérieur d'un dropdown ouvert)
+        if (!event.target.closest('.dropdown-menu')) {
             document.querySelectorAll('.dropdown-menu.active').forEach(menu => {
                 menu.classList.remove('active');
-                menu.parentElement.classList.remove('active');
+                if(menu.parentElement) menu.parentElement.classList.remove('active');
             });
         }
     });
@@ -220,5 +232,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Close modal when clicking outside of it
+    window.addEventListener('click', (event) => {
+        if (event.target.classList.contains('report-modal')) {
+            event.target.style.display = 'none';
+            event.target.classList.remove('active');
+        }
+    });
+
+    // --- Notifications Logic ---
+    const markReadBtn = document.getElementById('mark-read-btn');
+    if (markReadBtn) {
+        markReadBtn.addEventListener('click', () => {
+            fetch('/notifications/read', {
+                method: 'POST',
+            }).then(res => {
+                if(res.ok) {
+                    const badge = document.querySelector('.notif-badge');
+                    if (badge) badge.remove();
+                    const menu = document.querySelector('.notif-menu');
+                    if (menu) {
+                        menu.innerHTML = '<div class="notif-item text-muted">Aucune nouvelle notification</div>';
+                    }
+                }
+            });
+        });
+    }
 });
 

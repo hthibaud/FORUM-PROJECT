@@ -268,14 +268,14 @@ html[data-theme="light"] body {
             border-bottom: none; /* Assure qu'il n'y a pas de bordure au survol */
         }
 
-        /* Affiche le menu au survol sur les grands écrans */
+        /* Affiche le menu au survol sur les grands écrans, SAUF pour les notifications */
         @media (min-width: 769px) {
-            .dropdown:hover .dropdown-menu {
+            .dropdown:not(.notifications-dropdown):hover .dropdown-menu {
                 display: block;
             }
         }
         
-        /* Affiche le menu si la classe 'active' est présente (pour le clic mobile) */
+        /* Affiche le menu si la classe 'active' est présente (pour le clic mobile, ou les notifications) */
         .dropdown-menu.active {
             display: block;
         }
@@ -1073,6 +1073,52 @@ footer {
 .table td:last-child, .table th:last-child {
     border-top-right-radius: var(--radius-md);
     border-bottom-right-radius: var(--radius-md);
+}
+
+/* --- NOTIFICATIONS --- */
+.notifications-dropdown {
+    position: relative;
+}
+
+.notif-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #e74c3c;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    z-index: 2;
+    pointer-events: none; /* Empecher le badge de bloquer le clic sur la cloche */
+}
+
+.notif-menu {
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: var(--space-sm);
+    right: 0;
+    left: auto;
+}
+
+.notif-item {
+    padding: var(--space-sm);
+    border-bottom: 1px solid var(--bg-deep);
+    font-size: 0.9rem;
+}
+
+.notif-item:last-of-type {
+    border-bottom: none;
+}
+
+.notif-link {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--accent-primary);
 }
 
 /* Statuts */

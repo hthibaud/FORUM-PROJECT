@@ -36,6 +36,29 @@
                         <span id="theme-icon">⏾</span>
                     </button>
                     {{if .IsAuthenticated}}
+                    <div class="notifications-dropdown dropdown">
+                        <button class="btn-icon dropdown-toggle" id="notif-btn" style="position: relative;">
+                            🔔
+                            {{if .Notifications}}
+                                <span class="notif-badge">{{len .Notifications}}</span>
+                            {{end}}
+                        </button>
+                        <div class="dropdown-menu notif-menu">
+                            {{if .Notifications}}
+                                {{range .Notifications}}
+                                    <div class="notif-item">
+                                        <strong>{{.ActorName}}</strong> {{.Message}}
+                                        {{if .PostID.Valid}}
+                                            <a href="/post/{{.PostID.Int64}}" class="notif-link">Voir le post</a>
+                                        {{end}}
+                                    </div>
+                                {{end}}
+                                <button id="mark-read-btn" class="btn btn-sm" style="width: 100%; margin-top: 10px;">Marquer comme lu</button>
+                            {{else}}
+                                <div class="notif-item text-muted">Aucune nouvelle notification</div>
+                            {{end}}
+                        </div>
+                    </div>
                     <a href="/post/create" class="btn">Créer un post</a>
                     {{if and .IsAuthenticated (or (eq .User.Role "moderator") (eq .User.Role "admin"))}}
                     <a href="/moderation" class="btn btn-outline">Modération</a>
