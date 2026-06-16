@@ -6,10 +6,28 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 )
+
+func redirectToHTTPS(w http.ResponseWriter, r *http.Request) {
+	target := "https://" + r.Host + r.URL.Path
+	if r.URL.RawQuery != "" {
+		target += "?" + r.URL.RawQuery
+	}
+
+	utils.Debug(fmt.Sprintf("Redirection HTTP vers : %s", target))
+	http.Redirect(w, r, target, http.StatusMovedPermanently) // Code 301
+}
 
 func Start() {
 	mux := http.NewServeMux()
+
+	secureServer := &http.Server{
+		Addr:         fmt.Sprintf(":%v", config.Config.HTTPS_PORT),
+		Handler:      mux,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
 
 	// Public routes that do not require ban checks for unauthenticated users,
 	// but the middleware will handle redirection for banned users if they are logged in.
@@ -46,6 +64,14 @@ func Start() {
 	fs := http.FileServer(http.Dir("static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	utils.Log(fmt.Sprintf("Server started at : http://localhost:%v", config.Config.PORT))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", config.Config.PORT), mux))
+	// Goroutin for http redirect server
+	go func() {
+		utils.Log(fmt.Sprintf("Serveur de redirection HTTP démarré sur le port :%v...", config.Config.HTTP_PORT))
+		if err := http.ListenAndServe(fmt.Sprintf(":%v", config.Config.HTTP_PORT), http.HandlerFunc(redirectToHTTPS)); err != nil {
+			log.Fatalf("Échec du serveur HTTP : %v", err)
+		}
+	}()
+
+	utils.Log(fmt.Sprintf("Server started at : https://localhost:%v", config.Config.HTTPS_PORT))
+	log.Fatal(secureServer.ListenAndServeTLS("cert.pem", "key.pem"))
 }

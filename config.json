@@ -1,4 +1,5 @@
 {
     "DEBUG": true,
-    "PORT": 8080
+    "HTTP": 80,
+    "HTTPS": 443
 }
