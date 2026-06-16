@@ -35,7 +35,6 @@ func Start() {
 	mux.HandleFunc("/register", register)
 	mux.HandleFunc("/profile", profile)
 
-
 	// Logout is handled inside the middleware to allow banned users to log out.
 	mux.HandleFunc("/logout", logout)
 
@@ -44,6 +43,8 @@ func Start() {
 
 	// These handlers will be wrapped.
 	mux.Handle("/", checkBannedStatus(http.HandlerFunc(home)))
+	mux.Handle("/rules", checkBannedStatus(http.HandlerFunc(rulesPage)))
+	mux.Handle("/contact", checkBannedStatus(http.HandlerFunc(contactPage)))
 	mux.Handle("/forbidden", checkBannedStatus(http.HandlerFunc(forbidden)))
 	mux.Handle("/server-error", checkBannedStatus(http.HandlerFunc(serverError)))
 	mux.Handle("/not-found", checkBannedStatus(http.HandlerFunc(notFound)))
@@ -53,6 +54,7 @@ func Start() {
 	mux.Handle("/like/post", checkBannedStatus(http.HandlerFunc(handlePostLike)))
 	mux.Handle("/like/comment", checkBannedStatus(http.HandlerFunc(handleCommentLike)))
 	mux.Handle("/report", checkBannedStatus(http.HandlerFunc(reportContent)))
+	mux.Handle("/notifications/read", checkBannedStatus(http.HandlerFunc(readNotifications)))
 
 	// Moderation handlers are wrapped in both middlewares.
 	mux.Handle("/moderation", checkBannedStatus(isModerator(http.HandlerFunc(moderationPage))))

@@ -23,6 +23,12 @@ func newAuthenticatedPageData(r *http.Request) PageData {
 		user, err := session.GetUserFromSession(r)
 		if err == nil && user != nil {
 			data.User = *user
+
+			// Load notifications for the authenticated user
+			notifications, err := db.GetUnreadNotifications(user.ID)
+			if err == nil {
+				data.Notifications = notifications
+			}
 		}
 	}
 	return data
@@ -52,6 +58,18 @@ func bannedPage(w http.ResponseWriter, r *http.Request) {
 	data := newAuthenticatedPageData(r)
 	data.Title = "Banni"
 	utils.RenderTemplate(w, "banned.html", data)
+}
+
+func rulesPage(w http.ResponseWriter, r *http.Request) {
+	data := newAuthenticatedPageData(r)
+	data.Title = "Règles du Forum"
+	utils.RenderTemplate(w, "rules.html", data)
+}
+
+func contactPage(w http.ResponseWriter, r *http.Request) {
+	data := newAuthenticatedPageData(r)
+	data.Title = "Nous Contacter"
+	utils.RenderTemplate(w, "contact.html", data)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -370,7 +388,6 @@ func postView(w http.ResponseWriter, r *http.Request) {
 	data := newAuthenticatedPageData(r)
 	data.Title = post.Title
 	data.Post = *post
-	data.User = *user
 	data.Comments = rootComments
 	data.Categories = categories
 
@@ -695,6 +712,27 @@ func handleCommentLike(w http.ResponseWriter, r *http.Request) {
 		"dislikes":   comment.Dislikes,
 		"userChoice": comment.UserChoice,
 	})
+}
+
+func readNotifications(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user, err := session.GetUserFromSession(r)
+	if err != nil || user == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	if err := db.MarkNotificationsAsRead(user.ID); err != nil {
+		utils.LogError("could not mark notifications as read", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 // -- Moderation Handlers --

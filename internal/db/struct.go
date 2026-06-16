@@ -34,6 +34,7 @@ type Report struct {
 	ReporterName    string
 	Status          string
 	ContentAuthorID int
+	ParentPostID    int // ID du post parent (pour les commentaires)
 }
 
 // Session represents a user session in the database.
@@ -80,7 +81,12 @@ type Comment struct {
 
 // Notification represents a user notification.
 type Notification struct {
-	ID      int
-	Title   string
-	Message string
+	ID        int
+	UserID    int
+	ActorID   int
+	ActorName string
+	PostID    sql.NullInt64
+	Message   string
+	IsRead    bool
+	CreatedAt time.Time
 }

@@ -1,0 +1,41 @@
+{{define "page"}}
+<main class="container">
+    <section style="max-width: 42rem; margin: 0 auto; padding: var(--space-lg) 0;">
+        <h1 style="text-align: center; margin-bottom: var(--space-md);">Nous contacter</h1>
+        <p style="text-align: center; margin-bottom: var(--space-lg); color: var(--text-muted);">
+            Pour toute demande d'assistance technique, question relative à la modération ou proposition de partenariat, vous pouvez joindre l'administration du forum via les canaux officiels ci-dessous.
+        </p>
+        
+        <div class="panel" style="min-height: auto; display: flex; flex-direction: column; gap: var(--space-md); padding: var(--space-md);">
+            
+            <div style="border-bottom: 1px solid var(--bg-deep); padding-bottom: var(--space-sm);">
+                <h3 style="color: var(--accent-primary); margin-bottom: var(--space-sm);">Support Technique & Modération</h3>
+                <p style="margin-bottom: 0.5rem; color: var(--text-muted);">Pour signaler un dysfonctionnement ou contester une sanction :</p>
+                <a href="mailto:1romaincarrere@gmail.com" style="font-weight: 700; color: var(--accent-secondary);">1romaincarrere@gmail.com</a>
+            </div>
+
+            <div style="border-bottom: 1px solid var(--bg-deep); padding-bottom: var(--space-sm);">
+                <h3 style="color: var(--accent-primary); margin-bottom: var(--space-sm);">Relations Professionnelles</h3>
+                <p style="margin-bottom: 0.5rem; color: var(--text-muted);">Pour les demandes de partenariat ou d'infrastructure :</p>
+                <a href="mailto:contact@ziim.it" style="font-weight: 700; color: var(--accent-secondary);">contact@ziim.it</a>
+            </div>
+
+            <div>
+                <h3 style="color: var(--accent-primary); margin-bottom: var(--space-sm);">Permanence Téléphonique</h3>
+                <p style="margin-bottom: 0.5rem; color: var(--text-muted);">Nos lignes de support sont ouvertes du lundi au vendredi, de 09h00 à 18h00 :</p>
+                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <span>
+                        <strong style="color: var(--text-main);">Standard :</strong> 
+                        <a href="tel:+33642475418" style="color: var(--text-main); font-weight: 500;">+33 (0)6 42 47 54 18</a>
+                    </span>
+                    <span>
+                        <strong style="color: var(--text-main);">Urgence Infrastructure :</strong> 
+                        <a href="tel:+33645934442" style="color: var(--text-main); font-weight: 500;">+33 (0)6 45 93 44 42</a>
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</main>
+{{end}}

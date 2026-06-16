@@ -32,18 +32,25 @@
             </button>
             <span class="dislikes-count">{{.Post.Dislikes}}</span>
             {{if .IsAuthenticated}}
-            <form action="/report" method="post" class="report-form">
-                <input type="hidden" name="content_type" value="post">
-                <input type="hidden" name="content_id" value="{{.Post.ID}}">
-                <input type="text" name="reason" placeholder="Raison du signalement" required>
-                <button type="submit" class="btn btn-warning btn-sm">Signaler</button>
-            </form>
+            <button class="btn-action btn-report-toggle" data-post-id="{{.Post.ID}}" title="Signaler ce post">
+                <img class="icon-default" src="/static/icon/signalement.png" alt="Report" style="color: rgb(255, 40, 40);">
+            </button>
             {{if or (eq .User.Role "moderator") (eq .User.Role "admin")}}
             <form action="/moderation/delete/post/{{.Post.ID}}" method="post" style="display:inline;">
                 <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
             </form>
             {{end}}
             {{end}}
+        </footer>
+
+        {{if .IsAuthenticated}}
+        <form class="report-form" action="/report" method="post" data-post-id="{{.Post.ID}}">
+            <input type="hidden" name="content_type" value="post">
+            <input type="hidden" name="content_id" value="{{.Post.ID}}">
+            <input type="text" name="reason" placeholder="Raison du signalement" required>
+            <button type="submit" class="btn btn-warning btn-sm">Envoyer</button>
+        </form>
+        {{end}}
         </footer>
     </article>
 

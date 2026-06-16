@@ -72,27 +72,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Dropdown Menu Logic for Mobile ---
-    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
-        toggle.addEventListener('click', event => {
-            // Uniquement pour les écrans tactiles/petits
-            if (window.innerWidth < 769) {
+    // --- Dropdown Menu Logic ---
+    document.body.addEventListener('click', event => {
+        const toggle = event.target.closest('.dropdown-toggle');
+        
+        // Si on clique sur un toggle
+        if (toggle) {
+            // Uniquement pour les écrans tactiles/petits OU pour le bouton de notification (qui marche partout)
+            if (window.innerWidth < 769 || toggle.id === 'notif-btn') {
                 event.preventDefault(); // Empêche la navigation
                 
                 const menu = toggle.nextElementSibling;
-                if (menu && menu.classList.contains('dropdown-menu')) {
-                    menu.classList.toggle('active');
-                    toggle.parentElement.classList.toggle('active');
-                }
-            }
-        });
-    });
+                const isActive = menu && menu.classList.contains('active');
+                
+                // On ferme tous les autres menus d'abord
+                document.querySelectorAll('.dropdown-menu.active').forEach(m => {
+                    m.classList.remove('active');
+                    if(m.parentElement) m.parentElement.classList.remove('active');
+                });
 
-    window.addEventListener('click', function(e) {
-        if (!e.target.matches('.dropdown-toggle')) {
+                // Puis on ouvre celui-ci s'il n'était pas déjà ouvert
+                if (menu && !isActive) {
+                    menu.classList.add('active');
+                    toggle.parentElement.classList.add('active');
+                }
+                return; // On arrête là
+            }
+        }
+
+        // Si on a cliqué n'importe où ailleurs (pas sur un toggle ni à l'intérieur d'un dropdown ouvert)
+        if (!event.target.closest('.dropdown-menu')) {
             document.querySelectorAll('.dropdown-menu.active').forEach(menu => {
                 menu.classList.remove('active');
-                menu.parentElement.classList.remove('active');
+                if(menu.parentElement) menu.parentElement.classList.remove('active');
             });
         }
     });
@@ -148,6 +160,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- Report Form Toggle Logic ---
+    document.body.addEventListener('click', (event) => {
+        const reportButton = event.target.closest('.btn-report-toggle');
+        
+        if (reportButton) {
+            event.preventDefault();
+            const targetId = reportButton.dataset.target;
+            const form = document.getElementById(targetId);
+            
+            if (form) {
+                form.classList.toggle('active');
+            }
+        }
+    });
+
     function updateLikeUI(button, postID, commentID, data) {
         const container = button.closest('.post-actions') || button.closest('.comment-footer');
         if (!container) return;
@@ -167,6 +194,70 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (data.userChoice === -1) {
             dislikeBtn.classList.add('disliked');
         }
+    }
+
+    // --- Report Toggle with Event Delegation ---
+    document.addEventListener('click', (event) => {
+        const toggle = event.target.closest('.btn-report-toggle');
+        if (toggle) {
+            event.preventDefault();
+            const commentId = toggle.dataset.commentId;
+            const postId = toggle.dataset.postId;
+            
+            // Find the closest comment or post container
+            let container;
+            if (commentId) {
+                container = document.getElementById(`comment-${commentId}`);
+            } else if (postId) {
+                container = document.querySelector('article.post-full');
+            }
+            
+            if (container) {
+                let form;
+                if (commentId) {
+                    form = container.querySelector('.report-form[data-comment-id="' + commentId + '"]');
+                } else if (postId) {
+                    form = container.querySelector('.report-form[data-post-id="' + postId + '"]');
+                }
+                
+                if (form) {
+                    form.classList.toggle('active');
+                    
+                    // Focus on input if form is now visible
+                    if (form.classList.contains('active')) {
+                        const input = form.querySelector('input[name="reason"]');
+                        if (input) input.focus();
+                    }
+                }
+            }
+        }
+    });
+
+    // Close modal when clicking outside of it
+    window.addEventListener('click', (event) => {
+        if (event.target.classList.contains('report-modal')) {
+            event.target.style.display = 'none';
+            event.target.classList.remove('active');
+        }
+    });
+
+    // --- Notifications Logic ---
+    const markReadBtn = document.getElementById('mark-read-btn');
+    if (markReadBtn) {
+        markReadBtn.addEventListener('click', () => {
+            fetch('/notifications/read', {
+                method: 'POST',
+            }).then(res => {
+                if(res.ok) {
+                    const badge = document.querySelector('.notif-badge');
+                    if (badge) badge.remove();
+                    const menu = document.querySelector('.notif-menu');
+                    if (menu) {
+                        menu.innerHTML = '<div class="notif-item text-muted">Aucune nouvelle notification</div>';
+                    }
+                }
+            });
+        });
     }
 });
 
