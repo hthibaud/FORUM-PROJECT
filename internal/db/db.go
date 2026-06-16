@@ -66,6 +66,11 @@ func Init() {
 		log.Fatal("Error loading and initializing categories")
 	}
 
+	// Apply migrations for missing columns
+	if err := applyMigrations(); err != nil {
+		log.Fatalf("Error applying migrations: %v", err)
+	}
+
 	utils.Log("[OK] Database ready and verified.")
 }
 
@@ -88,6 +93,52 @@ func tableExists(tableName string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+// columnExists checks if a column exists in a table.
+func columnExists(tableName, columnName string) (bool, error) {
+	query := fmt.Sprintf("PRAGMA table_info(%s);", tableName)
+	rows, err := db.Query(query)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var cid int
+		var name string
+		var type_ string
+		var notnull int
+		var dfltValue sql.NullString
+		var pk int
+
+		if err := rows.Scan(&cid, &name, &type_, &notnull, &dfltValue, &pk); err != nil {
+			return false, err
+		}
+		if name == columnName {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// applyMigrations applies schema migrations to add missing columns.
+func applyMigrations() error {
+	// Check if the status column exists in the reports table
+	exists, err := columnExists("reports", "status")
+	if err != nil {
+		return fmt.Errorf("could not check if status column exists: %w", err)
+	}
+
+	if !exists {
+		utils.Debug("Adding missing 'status' column to 'reports' table...")
+		if _, err := db.Exec("ALTER TABLE reports ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'"); err != nil {
+			return fmt.Errorf("could not add status column to reports table: %w", err)
+		}
+		utils.Debug("Successfully added 'status' column to 'reports' table.")
+	}
+
+	return nil
 }
 
 // loadCategories loads initial data into the 'cat' table.
@@ -172,8 +223,8 @@ func CreateUser(username, password, email string) error {
 // GetUserByUsername retrieves a user by their username.
 func GetUserByUsername(username string) (*User, error) {
 	user := &User{}
-	query := `SELECT id, username, password, email, created_at FROM users WHERE username = ?`
-	err := db.QueryRow(query, username).Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.CreatedAt)
+	query := `SELECT id, username, password, email, role, is_banned, created_at FROM users WHERE username = ?`
+	err := db.QueryRow(query, username).Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.Role, &user.IsBanned, &user.CreatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil // Return nil if no user is found
@@ -186,8 +237,8 @@ func GetUserByUsername(username string) (*User, error) {
 // GetUserByID retrieves a user by their ID.
 func GetUserByID(id int) (*User, error) {
 	user := &User{}
-	query := `SELECT id, username, email, created_at FROM users WHERE id = ?`
-	err := db.QueryRow(query, id).Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt)
+	query := `SELECT id, username, email, role, is_banned, created_at FROM users WHERE id = ?`
+	err := db.QueryRow(query, id).Scan(&user.ID, &user.Username, &user.Email, &user.Role, &user.IsBanned, &user.CreatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -587,4 +638,122 @@ func GetCommentByID(id int, currentUserID int) (*Comment, error) {
 		return nil, fmt.Errorf("could not get comment by id: %w", err)
 	}
 	return comment, nil
+}
+
+// -- Moderation Functions --
+
+// CreateReport adds a new report to the database.
+func CreateReport(report *Report) error {
+	query := `INSERT INTO reports (reporter_id, content_id, content_type, reason) VALUES (?, ?, ?, ?)`
+	_, err := db.Exec(query, report.ReporterID, report.ContentID, report.ContentType, report.Reason)
+	if err != nil {
+		return fmt.Errorf("could not create report: %w", err)
+	}
+	return nil
+}
+
+// GetAllReports retrieves all reports from the database.
+func GetAllReports() ([]*Report, error) {
+	query := `
+		SELECT r.id, r.reporter_id, r.content_id, r.content_type, r.reason, r.created_at, u.username, r.status,
+		COALESCE(p.author, pm.user_id) as content_author_id
+		FROM reports r
+		JOIN users u ON r.reporter_id = u.id
+		LEFT JOIN post p ON r.content_type = 'post' AND r.content_id = p.id
+		LEFT JOIN post_message pm ON r.content_type = 'comment' AND r.content_id = pm.id
+		ORDER BY r.created_at DESC`
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("could not query reports: %w", err)
+	}
+	defer rows.Close()
+
+	var reports []*Report
+	for rows.Next() {
+		var report Report
+		var authorID sql.NullInt64 // Use NullInt64 to handle potential NULLs from LEFT JOIN
+		if err := rows.Scan(&report.ID, &report.ReporterID, &report.ContentID, &report.ContentType, &report.Reason, &report.CreatedAt, &report.ReporterName, &report.Status, &authorID); err != nil {
+			return nil, fmt.Errorf("could not scan report: %w", err)
+		}
+		if authorID.Valid {
+			report.ContentAuthorID = int(authorID.Int64)
+		}
+		reports = append(reports, &report)
+	}
+	return reports, rows.Err()
+}
+
+// BanUser marks a user as banned.
+func BanUser(userID int) error {
+	query := `UPDATE users SET is_banned = 1 WHERE id = ?`
+	_, err := db.Exec(query, userID)
+	if err != nil {
+		return fmt.Errorf("could not ban user: %w", err)
+	}
+	return nil
+}
+
+// UpdateReportStatus updates the status of a specific report.
+func UpdateReportStatus(reportID int, status string) error {
+	query := `UPDATE reports SET status = ? WHERE id = ?`
+	_, err := db.Exec(query, status, reportID)
+	if err != nil {
+		return fmt.Errorf("could not update report status: %w", err)
+	}
+	return nil
+}
+
+// UnbanUser marks a user as not banned.
+func UnbanUser(userID int) error {
+	query := `UPDATE users SET is_banned = 0 WHERE id = ?`
+	_, err := db.Exec(query, userID)
+	if err != nil {
+		return fmt.Errorf("could not unban user: %w", err)
+	}
+	return nil
+}
+
+// DeletePost deletes a post and its associated likes and comments.
+func DeletePost(postID int) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("could not start transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	// Cascade delete should handle likes and comments, but explicit is safer
+	if _, err := tx.Exec(`DELETE FROM post_likes WHERE post_id = ?`, postID); err != nil {
+		return fmt.Errorf("could not delete post likes: %w", err)
+	}
+	if _, err := tx.Exec(`DELETE FROM post_message WHERE post_id = ?`, postID); err != nil {
+		return fmt.Errorf("could not delete post comments: %w", err)
+	}
+	if _, err := tx.Exec(`DELETE FROM post WHERE id = ?`, postID); err != nil {
+		return fmt.Errorf("could not delete post: %w", err)
+	}
+
+	return tx.Commit()
+}
+
+// DeleteComment deletes a single comment and its associated likes.
+func DeleteComment(commentID int) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("could not start transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	// Cascade delete should handle likes, but explicit is safer
+	if _, err := tx.Exec(`DELETE FROM comment_likes WHERE comment_id = ?`, commentID); err != nil {
+		return fmt.Errorf("could not delete comment likes: %w", err)
+	}
+	// Also delete replies to this comment
+	if _, err := tx.Exec(`DELETE FROM post_message WHERE rep_id = ?`, commentID); err != nil {
+		return fmt.Errorf("could not delete comment replies: %w", err)
+	}
+	if _, err := tx.Exec(`DELETE FROM post_message WHERE id = ?`, commentID); err != nil {
+		return fmt.Errorf("could not delete comment: %w", err)
+	}
+
+	return tx.Commit()
 }
