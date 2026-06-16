@@ -69,10 +69,10 @@ type Comment struct {
 	AuthorID       int
 	AuthorUsername string
 	PostID         int
-	ParentID       sql.NullInt64 // Utiliser sql.NullInt64 pour les clés étrangères nullables
+	ParentID       sql.NullInt64 // Use sql.NullInt64 for nullable foreign keys
 	Text           string
 	Timestamp      time.Time
-	Replies        []*Comment // Pour les commentaires imbriqués
+	Replies        []*Comment // For nested comments
 	Likes          int
 	Dislikes       int
 	UserChoice     int // 1 for like, -1 for dislike, 0 for no vote

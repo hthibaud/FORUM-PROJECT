@@ -234,6 +234,20 @@ func GetUserByUsername(username string) (*User, error) {
 	return user, nil
 }
 
+// GetUserByEmail retrieves a user by their email address.
+func GetUserByEmail(email string) (*User, error) {
+	user := &User{}
+	query := `SELECT id, username, password, email, role, is_banned, created_at FROM users WHERE email = ?`
+	err := db.QueryRow(query, email).Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.Role, &user.IsBanned, &user.CreatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("could not get user by email: %w", err)
+	}
+	return user, nil
+}
+
 // GetUserByID retrieves a user by their ID.
 func GetUserByID(id int) (*User, error) {
 	user := &User{}
