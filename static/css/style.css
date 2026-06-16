@@ -832,6 +832,57 @@ footer {
     .profile-stats .card h2 { font-size: 2rem; }
 }
 
+/* Clickable profile cards */
+.card.clickable {
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none; /* ensure button resets */
+    text-align: center;
+}
+.card.clickable:hover {
+    transform: translateY(-0.35rem) scale(1.01);
+    box-shadow: var(--shadow-hover);
+}
+.card.clickable:focus {
+    outline: 3px solid rgba(136,183,187,0.18);
+    outline-offset: 4px;
+}
+
+/* Hidden helper */
+.hidden { display: none !important; }
+
+/* List cards shown when clicking a stat */
+.list-card {
+    background-color: var(--bg-surface);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+.list-card ul {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+.list-card li {
+    padding: calc(var(--space-sm) * 0.8) 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.03);
+}
+.list-card li a {
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 600;
+}
+.list-card li a:hover { color: var(--accent-primary); }
+.list-card p.text-muted { margin: 0; }
+
+/* Constrain list height on small screens and allow scrolling */
+.list-card { max-height: 50vh; overflow: auto; }
+
+
 /* --- Like/Dislike Actions --- */
 .post-actions, .comment-footer {
     display: flex;

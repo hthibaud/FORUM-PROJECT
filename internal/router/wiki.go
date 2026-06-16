@@ -387,6 +387,9 @@ func profile(w http.ResponseWriter, r *http.Request) {
 	createdPostsCount := 0
 	likedPostsCount := 0
 	postedCommentsCount := 0
+	var createdPosts []db.Post
+	var likedPosts []db.Post
+	var postedComments []db.Comment
 
 	for _, category := range categories {
 		posts, err := db.GetPostsByCategory(category.ID)
@@ -399,6 +402,7 @@ func profile(w http.ResponseWriter, r *http.Request) {
 		for _, post := range posts {
 			if post.AuthorID == user.ID {
 				createdPostsCount++
+				createdPosts = append(createdPosts, post)
 			}
 
 			detailedPost, err := db.GetPostByID(post.ID, user.ID)
@@ -409,6 +413,7 @@ func profile(w http.ResponseWriter, r *http.Request) {
 			}
 			if detailedPost != nil && detailedPost.UserChoice == 1 {
 				likedPostsCount++
+				likedPosts = append(likedPosts, *detailedPost)
 			}
 
 			comments, err := db.GetCommentsForPost(post.ID, user.ID)
@@ -420,6 +425,7 @@ func profile(w http.ResponseWriter, r *http.Request) {
 			for _, comment := range comments {
 				if comment.AuthorID == user.ID {
 					postedCommentsCount++
+					postedComments = append(postedComments, comment)
 				}
 			}
 		}
@@ -433,6 +439,9 @@ func profile(w http.ResponseWriter, r *http.Request) {
 		"CreatedPostsCount":   createdPostsCount,
 		"LikedPostsCount":     likedPostsCount,
 		"PostedCommentsCount": postedCommentsCount,
+		"CreatedPosts":        createdPosts,
+		"LikedPosts":          likedPosts,
+		"PostedComments":      postedComments,
 	}
 
 	utils.RenderTemplate(w, "profile.html", data)

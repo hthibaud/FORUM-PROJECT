@@ -7,21 +7,6 @@
         </div>
     </section>
 
-    <section class="grid profile-stats" style="gap: var(--space-md); margin-top: var(--space-lg);">
-        <article class="card">
-            <h2>{{.CreatedPostsCount}}</h2>
-            <p>Posts créés</p>
-        </article>
-        <article class="card">
-            <h2>{{.LikedPostsCount}}</h2>
-            <p>Posts likés</p>
-        </article>
-        <article class="card">
-            <h2>{{.PostedCommentsCount}}</h2>
-            <p>Commentaires postés</p>
-        </article>
-    </section>
-
     <section class="profile-card" style="margin-top: var(--space-lg); padding: var(--space-lg);">
         <h2>Informations du compte</h2>
             <div class="profile-row">
@@ -33,6 +18,60 @@
             <div class="profile-row">
                 <strong>Membre depuis :</strong> <span>{{.User.CreatedAt.Format "02 Jan 2006"}}</span>
         </div>
+    </section>
+
+    <section class="grid profile-stats" style="gap: var(--space-md); margin-top: var(--space-lg);">
+        <button class="card clickable" data-target="created-list" aria-expanded="false">
+            <h2>{{.CreatedPostsCount}}</h2>
+            <p>Posts créés</p>
+        </button>
+        <button class="card clickable" data-target="liked-list" aria-expanded="false">
+            <h2>{{.LikedPostsCount}}</h2>
+            <p>Posts likés</p>
+        </button>
+        <button class="card clickable" data-target="comments-list" aria-expanded="false">
+            <h2>{{.PostedCommentsCount}}</h2>
+            <p>Commentaires postés</p>
+        </button>
+    </section>
+
+    <section id="created-list" class="card list-card hidden" style="margin-top: var(--space-lg);">
+        <h2>Vos posts créés</h2>
+        {{if gt (len .CreatedPosts) 0}}
+            <ul>
+            {{range .CreatedPosts}}
+                <li><a href="/post/{{.ID}}">{{.Title}}</a> <span class="text-muted">— {{.Timestamp.Format "02 Jan 2006"}}</span></li>
+            {{end}}
+            </ul>
+        {{else}}
+            <p class="text-muted">Vous n'avez encore créé aucun post.</p>
+        {{end}}
+    </section>
+
+    <section id="liked-list" class="card list-card hidden" style="margin-top: var(--space-lg);">
+        <h2>Posts que vous avez likés</h2>
+        {{if gt (len .LikedPosts) 0}}
+            <ul>
+            {{range .LikedPosts}}
+                <li><a href="/post/{{.ID}}">{{.Title}}</a> <span class="text-muted">— {{.Timestamp.Format "02 Jan 2006"}}</span></li>
+            {{end}}
+            </ul>
+        {{else}}
+            <p class="text-muted">Vous n'avez encore liké aucun post.</p>
+        {{end}}
+    </section>
+
+    <section id="comments-list" class="card list-card hidden" style="margin-top: var(--space-lg);">
+        <h2>Commentaires publiés</h2>
+        {{if gt (len .PostedComments) 0}}
+            <ul>
+            {{range .PostedComments}}
+                <li>{{.Text}} <a class="text-muted" href="/post/{{.PostID}}">(voir le post)</a></li>
+            {{end}}
+            </ul>
+        {{else}}
+            <p class="text-muted">Vous n'avez encore posté aucun commentaire.</p>
+        {{end}}
     </section>
 
     <section class="profile-card" style="margin-top: var(--space-lg); padding: var(--space-lg);">
@@ -56,4 +95,18 @@
         {{end}}
     </section>
 </main>
+    <script>
+        // Toggle list visibility when clicking cards
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.card.clickable');
+            if (!btn) return;
+            const targetId = btn.getAttribute('data-target');
+            if (!targetId) return;
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            const isHidden = target.classList.toggle('hidden');
+            btn.setAttribute('aria-expanded', (!isHidden).toString());
+            if (!isHidden) target.scrollIntoView({behavior: 'smooth', block: 'start'});
+        });
+    </script>
 {{end}}
