@@ -1,0 +1,86 @@
+{{define "page"}}
+<main class="container">
+    <article class="post-full">
+        <header class="post-header">
+            <div class="post-author-info">
+            <div class="avatar-placeholder">
+                <span>{{.User.Username | initial}}</span>
+            </div>
+                <div>
+                    <span class="post-author-name">{{.Post.Author}}</span>
+                    <p class="post-meta">
+                        Posté le {{.Post.Timestamp.Format "02 Jan 2006 à 15:04"}}
+                    </p>
+                </div>
+            </div>
+            <h1>{{.Post.Title}}</h1>
+        </header>
+
+        <div class="post-content">
+            <p>{{.Post.Text}}</p>
+        </div>
+
+        <footer class="post-actions">
+            <button class="like-btn btn-action {{if eq .Post.UserChoice 1}}liked{{end}}" data-post-id="{{.Post.ID}}" data-action="1">
+                <img class="icon-default" src="/static/icon/coeur.png" alt="Like">
+                <img class="icon-active" src="/static/icon/coeur_plein_dessin.png" alt="Liked">
+            </button>
+            <span class="likes-count">{{.Post.Likes}}</span>
+            <button class="dislike-btn btn-action {{if eq .Post.UserChoice -1}}disliked{{end}}" data-post-id="{{.Post.ID}}" data-action="-1">
+                <img class="icon-default" src="/static/icon/coeur.png" alt="Dislike">
+                <img class="icon-active" src="/static/icon/coeur_plein_dessin.png" alt="Disliked">
+            </button>
+            <span class="dislikes-count">{{.Post.Dislikes}}</span>
+            {{if .IsAuthenticated}}
+            <button class="btn-action btn-report-toggle" data-post-id="{{.Post.ID}}" title="Signaler ce post">
+                <img class="icon-default" src="/static/icon/signalement.png" alt="Report" style="color: rgb(255, 40, 40);">
+            </button>
+            {{if or (eq .User.Role "moderator") (eq .User.Role "admin")}}
+            <form action="/moderation/delete/post/{{.Post.ID}}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+            </form>
+            {{end}}
+            {{end}}
+        </footer>
+
+        {{if .IsAuthenticated}}
+        <form class="report-form" action="/report" method="post" data-post-id="{{.Post.ID}}">
+            <input type="hidden" name="content_type" value="post">
+            <input type="hidden" name="content_id" value="{{.Post.ID}}">
+            <input type="text" name="reason" placeholder="Raison du signalement" required>
+            <button type="submit" class="btn btn-warning btn-sm">Envoyer</button>
+        </form>
+        {{end}}
+        </footer>
+    </article>
+
+    <section class="comments-section">
+        <h2>Commentaires ({{len .Comments}})</h2>
+        
+        {{if .IsAuthenticated}}
+        <form action="/post/{{.Post.ID}}/comment" method="POST" class="form-card">
+            <div class="form-group">
+                <label for="comment-text">Votre commentaire</label>
+                <textarea id="comment-text" name="comment" rows="4" placeholder="Exprimez-vous..." required></textarea>
+            </div>
+            <button type="submit" class="btn">Envoyer</button>
+        </form>
+        {{else}}
+        <p class="auth-prompt">Vous devez être <a href="/login">connecté</a> pour ajouter un commentaire.</p>
+        {{end}}
+
+        <div class="comments-list">
+            {{$pageData := .}}
+            {{range .Comments}}
+                {{template "comment" (dict "Page" $pageData "Comment" .)}}
+            {{end}}
+
+            {{if not .Comments}}
+            <div class="no-comments-card">
+                <p>Soyez le premier à commenter !</p>
+            </div>
+            {{end}}
+        </div>
+    </section>
+</main>
+{{end}}

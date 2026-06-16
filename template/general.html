@@ -1,0 +1,67 @@
+{{define "page"}}
+<main class="general-page">
+    <div class="container">
+        <div class="page-grid">
+            
+            <aside class="sidebar">
+                <h2>Catégories</h2>
+                <div class="sidebar-menu">
+                    {{range .Categories}}
+                    {{template "sidebar-card" .}}
+                    {{end}}
+                </div>
+            </aside>
+
+            <section class="main-content">
+                {{if .SelectedCategory}}
+                <div class="category-header content-title-white">
+                    <h1 class="category-title">{{.SelectedCategory.Name}}</h1>
+                    <p class="category-desc">{{.SelectedCategory.Desc}}</p>
+                </div>
+                {{else}}
+                <div class="category-header content-title-white">
+                    <h1 class="category-title">Zone de posts</h1>
+                    <p class="category-desc">Ici on pourra faire défiler les posts généraux qui traiteront de pleins de sujets divers.</p>
+                </div>
+                {{end}}
+
+                <div class="panel post-list-container">
+                    {{if .Posts}}
+                        <div class="post-list">
+                            {{range .Posts}}
+                            <a href="/post/{{.ID}}" class="post-item">
+                                <h2>{{.Title}}</h2>
+                                <p class="post-meta">Par <strong>{{.Author}}</strong> - {{.Timestamp.Format "02 Jan 2006"}}</p>
+                            </a>
+                            {{end}}
+                        </div>
+                    {{else}}
+                        <div class="empty-state">
+                            <p>Aucun post dans cette catégorie pour l’instant.</p>
+                        </div>
+                    {{end}}
+                </div>
+            </section>
+
+            <aside class="sidebar">
+                <h2>Notifications</h2>
+                <div class="sidebar-menu">
+                    {{if .Notifications}}
+                        {{range .Notifications}}
+                        <a href="#" class="card">
+                            <h3>{{.Title}}</h3>
+                            <p>{{.Message}}</p>
+                        </a>
+                        {{end}}
+                    {{else}}
+                        <div class="general-card">
+                            <p>Pas encore de notifications.</p>
+                        </div>
+                    {{end}}
+                </div>
+            </aside>
+            
+        </div>
+    </div>
+</main>
+{{end}}

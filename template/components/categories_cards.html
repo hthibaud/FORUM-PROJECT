@@ -1,0 +1,17 @@
+{{define "category-card"}}
+<div>
+    <a href="/category/{{.ID}}" class="card" style="text-decoration: none;">
+        <h3>{{.Name}}</h3>
+        <p>{{.Desc}}</p>
+    </a>
+</div>
+{{end}}
+
+{{define "sidebar-card"}}
+<div>
+    <a href="/category/{{.ID}}" class="general-card" style="text-decoration: none;">
+        <h3>{{.Name}}</h3>
+        <p>{{.Desc}}</p>
+    </a>
+</div>
+{{end}}

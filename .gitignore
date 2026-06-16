@@ -30,3 +30,20 @@ go.work.sum
 # Editor/IDE
 .idea/
 .vscode/
+
+# Docker & Runtime Generated Files
+# ================================
+# Database and data persistence (Docker volumes)
+data/
+*.db
+
+# Certificate and key files (Docker volumes)
+certs/
+*.pem
+
+# Docker build artifacts
+.docker/
+.dockerignore
+
+# Docker compose local overrides
+docker-compose.override.yml

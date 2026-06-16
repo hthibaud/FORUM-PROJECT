@@ -1,0 +1,24 @@
+{{define "page"}}
+<main class="container">
+    <h1>Créer un nouveau post</h1>
+    <form action="/post/create" method="POST" class="form-card">
+        <div class="form-group">
+            <label for="title">Titre</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <div class="form-group">
+            <label for="category">Catégorie</label>
+            <select id="category" name="category_id" required>
+                {{range .Categories}}
+                <option value="{{.ID}}">{{.Name}}</option>
+                {{end}}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="content">Contenu</label>
+            <textarea id="content" name="content" rows="10" required></textarea>
+        </div>
+        <button type="submit" class="btn">Créer le post</button>
+    </form>
+</main>
+{{end}}

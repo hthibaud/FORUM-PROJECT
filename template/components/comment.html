@@ -1,0 +1,72 @@
+{{define "comment"}}
+{{/* "Page" est le PageData root, "Comment" est le commentaire actuel */}}
+<div class="comment-card" id="comment-{{.Comment.ID}}">
+    <div class="comment-header">
+        <div class="avatar-placeholder">
+            <span>{{.Comment.AuthorUsername | initial}}</span>
+        </div>
+        <div class="comment-author-info">
+            <span class="comment-author-name">{{.Comment.AuthorUsername}}</span>
+            <span class="comment-meta">le {{.Comment.Timestamp.Format "02 Jan 2006 à 15:04"}}</span>
+        </div>
+    </div>
+    <div class="comment-body">
+        <p>{{.Comment.Text}}</p>
+    </div>
+    <div class="comment-footer">
+        <button class="like-btn btn-action {{if eq .Comment.UserChoice 1}}liked{{end}}" data-comment-id="{{.Comment.ID}}" data-action="1">
+            <img class="icon-default" src="/static/icon/pouce-leve.png" alt="Like">
+            <img class="icon-active" src="/static/icon/comme.png" alt="Liked">
+        </button>
+        <span class="likes-count">{{.Comment.Likes}}</span>
+        <button class="dislike-btn btn-action {{if eq .Comment.UserChoice -1}}disliked{{end}}" data-comment-id="{{.Comment.ID}}" data-action="-1">
+            <img class="icon-default" src="/static/icon/pouce-leve.png" alt="Dislike" style="image-orientation: 180;">
+            <img class="icon-active" src="/static/icon/comme.png" alt="Disliked" style="image-orientation: 180;">
+        </button>
+        <span class="dislikes-count">{{.Comment.Dislikes}}</span>
+        <button class="btn-action btn-reply" data-comment-id="{{.Comment.ID}}">
+            <img src="/static/icon/repondre.png" alt="Répondre">
+            <span>Répondre</span>
+        </button>
+        {{if $.Page.IsAuthenticated}}
+        <button class="btn-action btn-report-toggle" data-comment-id="{{.Comment.ID}}" title="Signaler ce commentaire">
+            <img class="icon-default" src="/static/icon/signalement.png" alt="Report" style="color: rgb(255, 40, 40);">
+        </button>
+        {{if or (eq $.Page.User.Role "moderator") (eq $.Page.User.Role "admin")}}
+        <form action="/moderation/delete/comment/{{.Comment.ID}}" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+        </form>
+        {{end}}
+        {{end}}
+    </div>
+
+    {{if $.Page.IsAuthenticated}}
+    <form class="report-form" action="/report" method="post" data-comment-id="{{.Comment.ID}}">
+        <input type="hidden" name="content_type" value="comment">
+        <input type="hidden" name="content_id" value="{{.Comment.ID}}">
+        <input type="text" name="reason" placeholder="Raison du signalement" required>
+        <button type="submit" class="btn btn-warning btn-sm">Envoyer</button>
+    </form>
+    {{end}}
+
+    {{if .Page.IsAuthenticated}}
+    <div id="reply-form-{{.Comment.ID}}" class="reply-form">
+        <form action="/post/{{.Comment.PostID}}/comment" method="POST">
+            <input type="hidden" name="parent_id" value="{{.Comment.ID}}">
+            <div class="form-group">
+                <textarea name="comment" rows="3" placeholder="Votre réponse..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-sm">Envoyer</button>
+        </form>
+    </div>
+    {{end}}
+
+    {{if .Comment.Replies}}
+    <div class="comment-replies">
+        {{range .Comment.Replies}}
+            {{template "comment" (dict "Page" $.Page "Comment" .)}}
+        {{end}}
+    </div>
+    {{end}}
+</div>
+{{end}}

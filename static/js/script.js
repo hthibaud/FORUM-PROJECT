@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fonction pour mettre à jour l'icône
     function updateIcon(theme) {
         if (themeIcon) {
-            themeIcon.textContent = theme === 'light' ? '☀️' : '🌙';
+            themeIcon.textContent = theme === 'light' ? '✺' : '⏾';
         }
     }
 
@@ -43,4 +43,221 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('theme', newTheme);
         updateIcon(newTheme);
     });
+
+    // --- Reply Form Logic ---
+    console.log("Setting up reply form listeners...");
+    const replyButtons = document.querySelectorAll('.btn-reply');
+    console.log(`Found ${replyButtons.length} reply buttons.`);
+
+    replyButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            console.log("Reply button clicked.");
+            const commentId = event.currentTarget.dataset.commentId;
+            console.log(`Comment ID: ${commentId}`);
+            if (!commentId) {
+                console.error("Button is missing data-comment-id attribute.");
+                return;
+            }
+
+            const formId = `reply-form-${commentId}`;
+            const form = document.getElementById(formId);
+            console.log(`Looking for form with ID: ${formId}`);
+
+            if (form) {
+                console.log("Form found. Toggling 'active' class.", form);
+                form.classList.toggle('active');
+            } else {
+                console.error(`Reply form with ID ${formId} not found.`);
+            }
+        });
+    });
+
+    // --- Dropdown Menu Logic ---
+    document.body.addEventListener('click', event => {
+        const toggle = event.target.closest('.dropdown-toggle');
+        
+        // Si on clique sur un toggle
+        if (toggle) {
+            // Uniquement pour les écrans tactiles/petits OU pour le bouton de notification (qui marche partout)
+            if (window.innerWidth < 769 || toggle.id === 'notif-btn') {
+                event.preventDefault(); // Empêche la navigation
+                
+                const menu = toggle.nextElementSibling;
+                const isActive = menu && menu.classList.contains('active');
+                
+                // On ferme tous les autres menus d'abord
+                document.querySelectorAll('.dropdown-menu.active').forEach(m => {
+                    m.classList.remove('active');
+                    if(m.parentElement) m.parentElement.classList.remove('active');
+                });
+
+                // Puis on ouvre celui-ci s'il n'était pas déjà ouvert
+                if (menu && !isActive) {
+                    menu.classList.add('active');
+                    toggle.parentElement.classList.add('active');
+                }
+                return; // On arrête là
+            }
+        }
+
+        // Si on a cliqué n'importe où ailleurs (pas sur un toggle ni à l'intérieur d'un dropdown ouvert)
+        if (!event.target.closest('.dropdown-menu')) {
+            document.querySelectorAll('.dropdown-menu.active').forEach(menu => {
+                menu.classList.remove('active');
+                if(menu.parentElement) menu.parentElement.classList.remove('active');
+            });
+        }
+    });
+
+    // --- Like / Dislike Logic ---
+    document.body.addEventListener('click', (event) => {
+        const button = event.target.closest('.like-btn, .dislike-btn');
+
+        if (button) {
+            const postID = button.dataset.postId;
+            const commentID = button.dataset.commentId;
+            const action = parseInt(button.dataset.action, 10);
+            
+            const isAlreadyActive = button.classList.contains('liked') || button.classList.contains('disliked');
+            
+            const payload = {
+                type: isAlreadyActive ? 0 : action, // Send 0 to remove vote if button is active
+            };
+
+            let url = '';
+            if (postID) {
+                url = '/like/post';
+                payload.post_id = parseInt(postID, 10);
+            } else if (commentID) {
+                url = '/like/comment';
+                payload.comment_id = parseInt(commentID, 10);
+            } else {
+                return; // No ID found
+            }
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/login';
+                    }
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                updateLikeUI(button, postID, commentID, data);
+            })
+            .catch(error => {
+                console.error('There has been a problem with your fetch operation:', error);
+            });
+        }
+    });
+
+    // --- Report Form Toggle Logic ---
+    document.body.addEventListener('click', (event) => {
+        const reportButton = event.target.closest('.btn-report-toggle');
+        
+        if (reportButton) {
+            event.preventDefault();
+            const targetId = reportButton.dataset.target;
+            const form = document.getElementById(targetId);
+            
+            if (form) {
+                form.classList.toggle('active');
+            }
+        }
+    });
+
+    function updateLikeUI(button, postID, commentID, data) {
+        const container = button.closest('.post-actions') || button.closest('.comment-footer');
+        if (!container) return;
+
+        container.querySelector('.likes-count').textContent = data.likes;
+        container.querySelector('.dislikes-count').textContent = data.dislikes;
+
+        // Reset both buttons
+        const likeBtn = container.querySelector('.like-btn');
+        const dislikeBtn = container.querySelector('.dislike-btn');
+        likeBtn.classList.remove('liked');
+        dislikeBtn.classList.remove('disliked');
+
+        // Apply new state
+        if (data.userChoice === 1) {
+            likeBtn.classList.add('liked');
+        } else if (data.userChoice === -1) {
+            dislikeBtn.classList.add('disliked');
+        }
+    }
+
+    // --- Report Toggle with Event Delegation ---
+    document.addEventListener('click', (event) => {
+        const toggle = event.target.closest('.btn-report-toggle');
+        if (toggle) {
+            event.preventDefault();
+            const commentId = toggle.dataset.commentId;
+            const postId = toggle.dataset.postId;
+            
+            // Find the closest comment or post container
+            let container;
+            if (commentId) {
+                container = document.getElementById(`comment-${commentId}`);
+            } else if (postId) {
+                container = document.querySelector('article.post-full');
+            }
+            
+            if (container) {
+                let form;
+                if (commentId) {
+                    form = container.querySelector('.report-form[data-comment-id="' + commentId + '"]');
+                } else if (postId) {
+                    form = container.querySelector('.report-form[data-post-id="' + postId + '"]');
+                }
+                
+                if (form) {
+                    form.classList.toggle('active');
+                    
+                    // Focus on input if form is now visible
+                    if (form.classList.contains('active')) {
+                        const input = form.querySelector('input[name="reason"]');
+                        if (input) input.focus();
+                    }
+                }
+            }
+        }
+    });
+
+    // Close modal when clicking outside of it
+    window.addEventListener('click', (event) => {
+        if (event.target.classList.contains('report-modal')) {
+            event.target.style.display = 'none';
+            event.target.classList.remove('active');
+        }
+    });
+
+    // --- Notifications Logic ---
+    const markReadBtn = document.getElementById('mark-read-btn');
+    if (markReadBtn) {
+        markReadBtn.addEventListener('click', () => {
+            fetch('/notifications/read', {
+                method: 'POST',
+            }).then(res => {
+                if(res.ok) {
+                    const badge = document.querySelector('.notif-badge');
+                    if (badge) badge.remove();
+                    const menu = document.querySelector('.notif-menu');
+                    if (menu) {
+                        menu.innerHTML = '<div class="notif-item text-muted">Aucune nouvelle notification</div>';
+                    }
+                }
+            });
+        });
+    }
 });
+
