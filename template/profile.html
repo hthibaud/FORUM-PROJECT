@@ -1,0 +1,59 @@
+{{define "page"}}
+<main class="container">
+    <section class="page-header">
+        <div class="page-header-content">
+            <h1>Profil de {{.User.Username}}</h1>
+            <p class="text-muted">Gérez et suivez vos posts, commentaires et contenus et ce que vous avez liké!</p>
+        </div>
+    </section>
+
+    <section class="grid profile-stats" style="gap: var(--space-md); margin-top: var(--space-lg);">
+        <article class="card">
+            <h2>{{.CreatedPostsCount}}</h2>
+            <p>Posts créés</p>
+        </article>
+        <article class="card">
+            <h2>{{.LikedPostsCount}}</h2>
+            <p>Posts likés</p>
+        </article>
+        <article class="card">
+            <h2>{{.PostedCommentsCount}}</h2>
+            <p>Commentaires postés</p>
+        </article>
+    </section>
+
+    <section class="profile-card" style="margin-top: var(--space-lg); padding: var(--space-lg);">
+        <h2>Informations du compte</h2>
+            <div class="profile-row">
+                <strong>Pseudo :</strong> <span>{{.User.Username}}</span>
+            </div>
+            <div class="profile-row">
+                <strong>Email :</strong> <span>{{.User.Email}}</span>
+            </div>
+            <div class="profile-row">
+                <strong>Membre depuis :</strong> <span>{{.User.CreatedAt.Format "02 Jan 2006"}}</span>
+        </div>
+    </section>
+
+    <section class="profile-card" style="margin-top: var(--space-lg); padding: var(--space-lg);">
+        <h2>Résumé de l'activité</h2>
+        {{if eq .CreatedPostsCount 0}}
+            <p class="text-muted" style="margin-top: var(--space-sm);">Vous n'avez encore jamais posté.</p>
+        {{else}}
+            <p class="text-muted" style="margin-top: var(--space-sm);">Vous avez créé <strong>{{.CreatedPostsCount}}</strong> post(s).</p>
+        {{end}}
+
+        {{if eq .LikedPostsCount 0}}
+            <p class="text-muted">Vous n'avez encore liké aucun post.</p>
+        {{else}}
+            <p class="text-muted">Vous avez liké <strong>{{.LikedPostsCount}}</strong> post(s).</p>
+        {{end}}
+
+        {{if eq .PostedCommentsCount 0}}
+            <p class="text-muted">Vous n'avez encore posté aucun commentaire.</p>
+        {{else}}
+            <p class="text-muted">Vous avez publié <strong>{{.PostedCommentsCount}}</strong> commentaire(s).</p>
+        {{end}}
+    </section>
+</main>
+{{end}}

@@ -15,6 +15,8 @@ func Start() {
 	// but the middleware will handle redirection for banned users if they are logged in.
 	mux.HandleFunc("/login", login)
 	mux.HandleFunc("/register", register)
+	mux.HandleFunc("/profile", profile)
+
 
 	// Logout is handled inside the middleware to allow banned users to log out.
 	mux.HandleFunc("/logout", logout)

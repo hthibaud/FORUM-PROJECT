@@ -362,6 +362,82 @@ func postView(w http.ResponseWriter, r *http.Request) {
 	utils.RenderTemplate(w, "post.html", data)
 }
 
+func profile(w http.ResponseWriter, r *http.Request) {
+	utils.Debug("Accessing profile page")
+	if !session.IsAuthenticated(r) {
+		utils.Debug("User not authenticated, redirecting to login")
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	user, err := session.GetUserFromSession(r)
+	if err != nil || user == nil {
+		utils.LogError("could not get authenticated user", err)
+		serverError(w, r)
+		return
+	}
+
+	categories, err := db.GetCategories()
+	if err != nil {
+		utils.LogError("could not get categories", err)
+		serverError(w, r)
+		return
+	}
+
+	createdPostsCount := 0
+	likedPostsCount := 0
+	postedCommentsCount := 0
+
+	for _, category := range categories {
+		posts, err := db.GetPostsByCategory(category.ID)
+		if err != nil {
+			utils.LogError("could not get posts for category", err)
+			serverError(w, r)
+			return
+		}
+
+		for _, post := range posts {
+			if post.AuthorID == user.ID {
+				createdPostsCount++
+			}
+
+			detailedPost, err := db.GetPostByID(post.ID, user.ID)
+			if err != nil {
+				utils.LogError("could not get detailed post info", err)
+				serverError(w, r)
+				return
+			}
+			if detailedPost != nil && detailedPost.UserChoice == 1 {
+				likedPostsCount++
+			}
+
+			comments, err := db.GetCommentsForPost(post.ID, user.ID)
+			if err != nil {
+				utils.LogError("could not get comments for post", err)
+				serverError(w, r)
+				return
+			}
+			for _, comment := range comments {
+				if comment.AuthorID == user.ID {
+					postedCommentsCount++
+				}
+			}
+		}
+	}
+
+	data := map[string]any{
+		"Title":               "Profil",
+		"User":                *user,
+		"Categories":          categories,
+		"IsAuthenticated":     true,
+		"CreatedPostsCount":   createdPostsCount,
+		"LikedPostsCount":     likedPostsCount,
+		"PostedCommentsCount": postedCommentsCount,
+	}
+
+	utils.RenderTemplate(w, "profile.html", data)
+}
+
 func createPost(w http.ResponseWriter, r *http.Request) {
 	utils.Debug("Accessing create post page")
 	if !session.IsAuthenticated(r) {
