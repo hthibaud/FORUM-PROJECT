@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  forum-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: forum_container
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Persistance de la base SQLite (mappé sur ./data/database.db du conteneur)
+      - forum-db:/app/data
+      # Persistance des certificats pour éviter les alertes de changement d'empreinte
+      - forum-certs:/app/certs
+    restart: unless-stopped
+
+volumes:
+  forum-db:
+  forum-certs:
