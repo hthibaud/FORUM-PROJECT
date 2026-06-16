@@ -33,3 +33,6 @@ go.work.sum
 
 # Ignore DB
 *.db
+
+# Ignore Cert Keys
+*.pem
