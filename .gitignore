@@ -31,8 +31,19 @@ go.work.sum
 .idea/
 .vscode/
 
-# Ignore DB
+# Docker & Runtime Generated Files
+# ================================
+# Database and data persistence (Docker volumes)
+data/
 *.db
 
-# Ignore Cert Keys
+# Certificate and key files (Docker volumes)
+certs/
 *.pem
+
+# Docker build artifacts
+.docker/
+.dockerignore
+
+# Docker compose local overrides
+docker-compose.override.yml
