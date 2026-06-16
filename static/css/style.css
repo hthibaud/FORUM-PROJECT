@@ -952,3 +952,62 @@ footer {
 .dislike-btn.disliked {
     filter: brightness(0) saturate(100%) invert(60%) sepia(50%) saturate(1000%) hue-rotate(320deg);
 }
+
+/* --- Toggle Signalement --- */
+.report-wrapper {
+    margin-left: auto; /* Pousse l'élément à l'extrême droite du conteneur flex */
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.report-form {
+    display: none; /* Masqué par défaut */
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+    padding: var(--space-md);
+    background-color: var(--bg-panel);
+    border-radius: var(--radius-md);
+    animation: fadeInRight 0.2s ease-out forwards;
+}
+
+.report-form.active {
+    display: flex;
+}
+
+.report-form input[type="text"],
+.report-form button {
+    width: auto;
+}
+
+.report-form input[type="text"] {
+    padding: 5px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--bg-deep);
+    background-color: var(--bg-base);
+    color: var(--text-main);
+}
+
+.btn-report-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    font-size: 1.2rem;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+}
+
+.btn-report-toggle:hover {
+    opacity: 1;
+}
+
+@keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(10px); }
+    to { opacity: 1; transform: translateX(0); }
+}

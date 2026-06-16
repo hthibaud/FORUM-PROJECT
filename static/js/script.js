@@ -148,6 +148,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- Report Form Toggle Logic ---
+    document.body.addEventListener('click', (event) => {
+        const reportButton = event.target.closest('.btn-report-toggle');
+        
+        if (reportButton) {
+            event.preventDefault();
+            const targetId = reportButton.dataset.target;
+            const form = document.getElementById(targetId);
+            
+            if (form) {
+                form.classList.toggle('active');
+            }
+        }
+    });
+
     function updateLikeUI(button, postID, commentID, data) {
         const container = button.closest('.post-actions') || button.closest('.comment-footer');
         if (!container) return;
@@ -168,5 +183,42 @@ document.addEventListener('DOMContentLoaded', () => {
             dislikeBtn.classList.add('disliked');
         }
     }
+
+    // --- Report Toggle with Event Delegation ---
+    document.addEventListener('click', (event) => {
+        const toggle = event.target.closest('.btn-report-toggle');
+        if (toggle) {
+            event.preventDefault();
+            const commentId = toggle.dataset.commentId;
+            const postId = toggle.dataset.postId;
+            
+            // Find the closest comment or post container
+            let container;
+            if (commentId) {
+                container = document.getElementById(`comment-${commentId}`);
+            } else if (postId) {
+                container = document.querySelector('article.post-full');
+            }
+            
+            if (container) {
+                let form;
+                if (commentId) {
+                    form = container.querySelector('.report-form[data-comment-id="' + commentId + '"]');
+                } else if (postId) {
+                    form = container.querySelector('.report-form[data-post-id="' + postId + '"]');
+                }
+                
+                if (form) {
+                    form.classList.toggle('active');
+                    
+                    // Focus on input if form is now visible
+                    if (form.classList.contains('active')) {
+                        const input = form.querySelector('input[name="reason"]');
+                        if (input) input.focus();
+                    }
+                }
+            }
+        }
+    });
 });
 

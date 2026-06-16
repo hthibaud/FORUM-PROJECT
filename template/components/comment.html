@@ -29,12 +29,9 @@
             <span>Répondre</span>
         </button>
         {{if $.Page.IsAuthenticated}}
-        <form action="/report" method="post" class="report-form" style="display:inline-flex; align-items: center; gap: 5px;">
-            <input type="hidden" name="content_type" value="comment">
-            <input type="hidden" name="content_id" value="{{.Comment.ID}}">
-            <input type="text" name="reason" placeholder="Raison du signalement" required style="padding: 5px; border-radius: 3px; border: 1px solid #ccc;">
-            <button type="submit" class="btn btn-warning btn-sm">Signaler</button>
-        </form>
+        <button class="btn-action btn-report-toggle" data-comment-id="{{.Comment.ID}}" title="Signaler ce commentaire">
+            🚩
+        </button>
         {{if or (eq $.Page.User.Role "moderator") (eq $.Page.User.Role "admin")}}
         <form action="/moderation/delete/comment/{{.Comment.ID}}" method="post" style="display:inline;">
             <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
@@ -42,6 +39,15 @@
         {{end}}
         {{end}}
     </div>
+
+    {{if $.Page.IsAuthenticated}}
+    <form class="report-form" action="/report" method="post" data-comment-id="{{.Comment.ID}}">
+        <input type="hidden" name="content_type" value="comment">
+        <input type="hidden" name="content_id" value="{{.Comment.ID}}">
+        <input type="text" name="reason" placeholder="Raison du signalement" required>
+        <button type="submit" class="btn btn-warning btn-sm">Envoyer</button>
+    </form>
+    {{end}}
 
     {{if .Page.IsAuthenticated}}
     <div id="reply-form-{{.Comment.ID}}" class="reply-form">
