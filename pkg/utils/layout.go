@@ -109,17 +109,20 @@ func RenderTemplate(w http.ResponseWriter, name string, data any) {
 }
 
 // RenderError generates a standardized error page using the error.html template.
-func RenderError(statusCode int, title, heading, message string, isAuthenticated bool, w http.ResponseWriter) {
+func RenderError(w http.ResponseWriter, statusCode int, title, heading, message string, isAuthenticated bool, categories, user any) {
 	data := ErrorPageInfo{
 		Title:           title,
 		Heading:         heading,
 		Message:         message,
 		Code:            statusCode,
 		IsAuthenticated: isAuthenticated,
+		Categories:      categories,
+		User:            user,
 	}
 
 	buf, err := executeTemplateToBuffer("error.html", data)
 	if err != nil {
+		// Fallback to plain text error if template execution fails
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -145,4 +148,6 @@ type ErrorPageInfo struct {
 	Message         string
 	Title           string
 	IsAuthenticated bool
+	Categories      any
+	User            any
 }
