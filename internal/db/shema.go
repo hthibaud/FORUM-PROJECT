@@ -6,8 +6,21 @@ var schema = map[string]string{
         username TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
         email TEXT NOT NULL,
+		role TEXT NOT NULL DEFAULT 'user',
+		is_banned INTEGER NOT NULL DEFAULT 0,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
+	"reports": `CREATE TABLE "reports" (
+		"id"	INTEGER NOT NULL UNIQUE,
+		"reporter_id"	INTEGER NOT NULL,
+		"content_id"	INTEGER NOT NULL,
+		"content_type"	TEXT NOT NULL,
+		"reason"	TEXT NOT NULL,
+		"status" TEXT NOT NULL DEFAULT 'pending',
+		"created_at"	DATETIME DEFAULT CURRENT_TIMESTAMP,
+		PRIMARY KEY("id" AUTOINCREMENT),
+		FOREIGN KEY("reporter_id") REFERENCES "users"("id")
+	);`,
 	"connexions_data": `CREATE TABLE "connexions_data" (
 		"id"	INTEGER NOT NULL UNIQUE,
 		"user_id"	INTEGER NOT NULL,
@@ -75,8 +88,8 @@ var schema = map[string]string{
 }
 
 var categories = map[string]string{
-	"Général":       "Discussions générales",
-	"Programmation": "Tout sur le code",
-	"IOT & Robotique": "Vous aimez les robotique et les objets connectés? Nous aussi!",
+	"Général":                           "Discussions générales",
+	"Programmation":                     "Tout sur le code",
+	"IOT & Robotique":                   "Vous aimez les robotique et les objets connectés? Nous aussi!",
 	"Cloud & Intelligence artificielle": "Tout sur le cloud et l'intelligence artificielle à la maison",
 }

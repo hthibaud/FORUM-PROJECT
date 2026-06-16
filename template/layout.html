@@ -36,7 +36,10 @@
                         <span id="theme-icon">⏾</span>
                     </button>
                     {{if .IsAuthenticated}}
-                    <a href="/create-post" class="btn">Créer un post</a>
+                    <a href="/post/create" class="btn">Créer un post</a>
+                    {{if and .IsAuthenticated (or (eq .User.Role "moderator") (eq .User.Role "admin"))}}
+                    <a href="/moderation" class="btn btn-outline">Modération</a>
+                    {{end}}
                     <a href="/logout" class="btn btn-outline">Déconnexion</a>
                     {{else}}
                     <a href="/login" class="btn btn-outline">Connexion</a>

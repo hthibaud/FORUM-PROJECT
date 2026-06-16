@@ -18,7 +18,22 @@ type User struct {
 	Username  string
 	Password  string // This will be the hashed password
 	Email     string
+	Role      string
+	IsBanned  bool
 	CreatedAt time.Time
+}
+
+// Report represents a report from a user.
+type Report struct {
+	ID              int
+	ReporterID      int
+	ContentID       int
+	ContentType     string
+	Reason          string
+	CreatedAt       time.Time
+	ReporterName    string
+	Status          string
+	ContentAuthorID int
 }
 
 // Session represents a user session in the database.

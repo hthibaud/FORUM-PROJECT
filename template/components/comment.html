@@ -28,6 +28,19 @@
             <img src="/static/icon/repondre.png" alt="Répondre">
             <span>Répondre</span>
         </button>
+        {{if $.Page.IsAuthenticated}}
+        <form action="/report" method="post" class="report-form" style="display:inline-flex; align-items: center; gap: 5px;">
+            <input type="hidden" name="content_type" value="comment">
+            <input type="hidden" name="content_id" value="{{.Comment.ID}}">
+            <input type="text" name="reason" placeholder="Raison du signalement" required style="padding: 5px; border-radius: 3px; border: 1px solid #ccc;">
+            <button type="submit" class="btn btn-warning btn-sm">Signaler</button>
+        </form>
+        {{if or (eq $.Page.User.Role "moderator") (eq $.Page.User.Role "admin")}}
+        <form action="/moderation/delete/comment/{{.Comment.ID}}" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+        </form>
+        {{end}}
+        {{end}}
     </div>
 
     {{if .Page.IsAuthenticated}}

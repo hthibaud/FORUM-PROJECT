@@ -32,6 +32,19 @@
                 <img class="icon-active" src="/static/icon/coeur_plein_dessin.png" alt="Disliked">
             </button>
             <span class="dislikes-count">{{.Post.Dislikes}}</span>
+            {{if .IsAuthenticated}}
+            <form action="/report" method="post" class="report-form">
+                <input type="hidden" name="content_type" value="post">
+                <input type="hidden" name="content_id" value="{{.Post.ID}}">
+                <input type="text" name="reason" placeholder="Raison du signalement" required>
+                <button type="submit" class="btn btn-warning btn-sm">Signaler</button>
+            </form>
+            {{if or (eq .User.Role "moderator") (eq .User.Role "admin")}}
+            <form action="/moderation/delete/post/{{.Post.ID}}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+            </form>
+            {{end}}
+            {{end}}
         </footer>
     </article>
 

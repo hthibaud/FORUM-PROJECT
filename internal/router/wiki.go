@@ -13,6 +13,47 @@ import (
 	"time"
 )
 
+// newAuthenticatedPageData creates a PageData struct and populates it with user
+// information if the user is authenticated.
+func newAuthenticatedPageData(r *http.Request) PageData {
+	data := PageData{
+		IsAuthenticated: session.IsAuthenticated(r),
+	}
+	if data.IsAuthenticated {
+		user, err := session.GetUserFromSession(r)
+		if err == nil && user != nil {
+			data.User = *user
+		}
+	}
+	return data
+}
+
+// checkBannedStatus is a middleware that checks if a user is banned.
+// If so, it redirects them to the banned page.
+func checkBannedStatus(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if session.IsAuthenticated(r) {
+			user, err := session.GetUserFromSession(r)
+			if err == nil && user != nil && user.IsBanned {
+				// Allow banned users to log out
+				if r.URL.Path == "/logout" {
+					next.ServeHTTP(w, r)
+					return
+				}
+				http.Redirect(w, r, "/banned", http.StatusSeeOther)
+				return
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func bannedPage(w http.ResponseWriter, r *http.Request) {
+	data := newAuthenticatedPageData(r)
+	data.Title = "Banni"
+	utils.RenderTemplate(w, "banned.html", data)
+}
+
 func home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		notFound(w, r)
@@ -33,22 +74,30 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := PageData{
-		Title:           "Accueil",
-		Categories:      categories,
-		Posts:           recentPosts, // On ajoute les posts ici
-		IsAuthenticated: session.IsAuthenticated(r),
-	}
+	data := newAuthenticatedPageData(r)
+	data.Title = "Accueil"
+	data.Categories = categories
+	data.Posts = recentPosts
 
 	utils.RenderTemplate(w, "index.html", data)
 }
 
 func forbidden(w http.ResponseWriter, r *http.Request) {
-	utils.RenderError(http.StatusForbidden, "403 - Accès refusé", "Erreur 403", "Vous n’avez pas les droits nécessaires pour accéder à cette page.", session.IsAuthenticated(r), w)
+	categories, err := db.GetCategories()
+	if err != nil {
+		utils.LogError("could not get categories for forbidden page", err)
+	}
+	user, _ := session.GetUserFromSession(r)
+	utils.RenderError(w, http.StatusForbidden, "403 - Accès refusé", "Erreur 403", "Vous n’avez pas les droits nécessaires pour accéder à cette page.", session.IsAuthenticated(r), categories, user)
 }
 
 func notFound(w http.ResponseWriter, r *http.Request) {
-	utils.RenderError(http.StatusNotFound, "404 - Page non trouvée", "Erreur 404", "La page que vous recherchez n'existe pas.", session.IsAuthenticated(r), w)
+	categories, err := db.GetCategories()
+	if err != nil {
+		utils.LogError("could not get categories for notFound page", err)
+	}
+	user, _ := session.GetUserFromSession(r)
+	utils.RenderError(w, http.StatusNotFound, "404 - Page non trouvée", "Erreur 404", "La page que vous recherchez n'existe pas.", session.IsAuthenticated(r), categories, user)
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
@@ -116,7 +165,12 @@ func register(w http.ResponseWriter, r *http.Request) {
 }
 
 func serverError(w http.ResponseWriter, r *http.Request) {
-	utils.RenderError(http.StatusInternalServerError, "500 - Erreur serveur", "Erreur 500", "Une erreur interne est survenue. Merci de réessayer plus tard.", session.IsAuthenticated(r), w)
+	categories, err := db.GetCategories()
+	if err != nil {
+		utils.LogError("could not get categories for serverError page, sending plain error", err)
+	}
+	user, _ := session.GetUserFromSession(r)
+	utils.RenderError(w, http.StatusInternalServerError, "500 - Erreur serveur", "Erreur 500", "Une erreur interne est survenue. Merci de réessayer plus tard.", session.IsAuthenticated(r), categories, user)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -145,6 +199,12 @@ func login(w http.ResponseWriter, r *http.Request) {
 		if user == nil || !utils.CheckPasswordHash(password, user.Password) {
 			utils.Debug("Invalid credentials for user: " + username)
 			data.Message = "Identifiants invalides"
+			utils.RenderTemplate(w, "login.html", data)
+			return
+		}
+		if user.IsBanned {
+			utils.Debug("Banned user tried to login: " + username)
+			data.Message = "Votre compte a été banni."
 			utils.RenderTemplate(w, "login.html", data)
 			return
 		}
@@ -213,14 +273,13 @@ func categoryPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := PageData{
-		Title:            selectedCategory.Name,
-		Categories:       categories,
-		SelectedCategory: selectedCategory,
-		Posts:            posts,
-		Notifications:    []db.Notification{},
-		IsAuthenticated:  session.IsAuthenticated(r),
-	}
+	data := newAuthenticatedPageData(r)
+	data.Title = selectedCategory.Name
+	data.Categories = categories
+	data.SelectedCategory = selectedCategory
+	data.Posts = posts
+	data.Notifications = []db.Notification{}
+
 	utils.RenderTemplate(w, "general.html", data)
 }
 
@@ -294,13 +353,11 @@ func postView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := PageData{
-		Title:           post.Title,
-		IsAuthenticated: session.IsAuthenticated(r),
-		Post:            *post,
-		Comments:        rootComments,
-		Categories:      categories,
-	}
+	data := newAuthenticatedPageData(r)
+	data.Title = post.Title
+	data.Post = *post
+	data.Comments = rootComments
+	data.Categories = categories
 
 	utils.RenderTemplate(w, "post.html", data)
 }
@@ -322,11 +379,10 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		data := PageData{
-			Title:           "Create a new post",
-			IsAuthenticated: true,
-			Categories:      categories,
-		}
+		data := newAuthenticatedPageData(r)
+		data.Title = "Create a new post"
+		data.Categories = categories
+
 		utils.RenderTemplate(w, "create_post.html", data)
 		return
 	}
@@ -539,4 +595,222 @@ func handleCommentLike(w http.ResponseWriter, r *http.Request) {
 		"dislikes":   comment.Dislikes,
 		"userChoice": comment.UserChoice,
 	})
+}
+
+// -- Moderation Handlers --
+
+func isModerator(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, err := session.GetUserFromSession(r)
+		if err != nil {
+			utils.LogError("Error getting user from session", err)
+			serverError(w, r)
+			return
+		}
+		if user == nil || (user.Role != "moderator" && user.Role != "admin") {
+			forbidden(w, r)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func reportContent(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user, err := session.GetUserFromSession(r)
+	if err != nil || user == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		serverError(w, r)
+		return
+	}
+
+	contentType := r.FormValue("content_type")
+	contentIDStr := r.FormValue("content_id")
+	reason := r.FormValue("reason")
+
+	contentID, err := strconv.Atoi(contentIDStr)
+	if err != nil {
+		http.Error(w, "Invalid content ID", http.StatusBadRequest)
+		return
+	}
+
+	report := &db.Report{
+		ReporterID:  user.ID,
+		ContentID:   contentID,
+		ContentType: contentType,
+		Reason:      reason,
+	}
+
+	err = db.CreateReport(report)
+	if err != nil {
+		utils.LogError("could not create report", err)
+		serverError(w, r)
+		return
+	}
+
+	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+}
+
+func moderationPage(w http.ResponseWriter, r *http.Request) {
+	reports, err := db.GetAllReports()
+	if err != nil {
+		utils.LogError("could not get reports", err)
+		serverError(w, r)
+		return
+	}
+
+	data := newAuthenticatedPageData(r)
+	data.Title = "Moderation"
+	data.Reports = reports
+
+	utils.RenderTemplate(w, "moderation.html", data)
+}
+
+func banUser(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/moderation/ban/")
+	userID, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	err = db.BanUser(userID)
+	if err != nil {
+		utils.LogError("could not ban user", err)
+		serverError(w, r)
+		return
+	}
+
+	http.Redirect(w, r, "/moderation", http.StatusSeeOther)
+}
+
+func handleDeleteReport(w http.ResponseWriter, r *http.Request) {
+	reportIDStr := strings.TrimPrefix(r.URL.Path, "/moderation/handle/delete/")
+	reportID, err := strconv.Atoi(reportIDStr)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	// This is not efficient, but it's simple. A better way would be to get the report by its ID.
+	// I will assume this is acceptable for now.
+	reports, err := db.GetAllReports()
+	if err != nil {
+		serverError(w, r)
+		return
+	}
+
+	var report *db.Report
+	for _, r := range reports {
+		if r.ID == reportID {
+			report = r
+			break
+		}
+	}
+
+	if report == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	if report.ContentType == "post" {
+		err = db.DeletePost(report.ContentID)
+	} else if report.ContentType == "comment" {
+		err = db.DeleteComment(report.ContentID)
+	}
+
+	if err != nil {
+		utils.LogError("could not delete content from report", err)
+		serverError(w, r)
+		return
+	}
+
+	err = db.UpdateReportStatus(reportID, "handled")
+	if err != nil {
+		utils.LogError("could not update report status", err)
+		// The content was deleted, but the status update failed. Log and redirect.
+	}
+
+	http.Redirect(w, r, "/moderation", http.StatusSeeOther)
+}
+
+func handleDismissReport(w http.ResponseWriter, r *http.Request) {
+	reportIDStr := strings.TrimPrefix(r.URL.Path, "/moderation/handle/dismiss/")
+	reportID, err := strconv.Atoi(reportIDStr)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	err = db.UpdateReportStatus(reportID, "handled")
+	if err != nil {
+		utils.LogError("could not dismiss report", err)
+		serverError(w, r)
+		return
+	}
+
+	http.Redirect(w, r, "/moderation", http.StatusSeeOther)
+}
+
+func unbanUser(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/moderation/unban/")
+	userID, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	err = db.UnbanUser(userID)
+	if err != nil {
+		utils.LogError("could not unban user", err)
+		serverError(w, r)
+		return
+	}
+
+	http.Redirect(w, r, "/moderation", http.StatusSeeOther)
+}
+
+func deletePost(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/moderation/delete/post/")
+	postID, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	err = db.DeletePost(postID)
+	if err != nil {
+		utils.LogError("could not delete post", err)
+		serverError(w, r)
+		return
+	}
+
+	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+}
+
+func deleteComment(w http.ResponseWriter, r *http.Request) {
+	idStr := strings.TrimPrefix(r.URL.Path, "/moderation/delete/comment/")
+	commentID, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	err = db.DeleteComment(commentID)
+	if err != nil {
+		utils.LogError("could not delete comment", err)
+		serverError(w, r)
+		return
+	}
+
+	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 }

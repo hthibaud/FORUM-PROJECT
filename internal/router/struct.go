@@ -6,6 +6,7 @@ import "Forum/internal/db"
 type PageData struct {
 	Title            string
 	Message          string
+	User             db.User
 	Categories       []db.Category
 	SelectedCategory *db.Category
 	Posts            []db.Post
@@ -13,6 +14,7 @@ type PageData struct {
 	IsAuthenticated  bool
 	Post             db.Post
 	Comments         []*db.Comment
+	Reports          []*db.Report
 }
 
 type discoverPageData struct {

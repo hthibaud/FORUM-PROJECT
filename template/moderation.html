@@ -1,0 +1,39 @@
+{{template "layout" .}}
+
+{{define "page"}}
+<div class="container">
+    <h1>Espace Modérateur</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Rapporté par</th>
+                <th>Type</th>
+                <th>Contenu ID</th>
+                <th>Raison</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Reports}}
+            <tr>
+                <td>{{.ReporterName}}</td>
+                <td><a href="/post/{{.ContentID}}" target="_blank">{{.ContentType}} #{{.ContentID}}</a></td>
+                <td>{{.ContentID}}</td>
+                <td>{{.Reason}}</td>
+                <td><span class="status-{{.Status}}">{{.Status}}</span></td>
+                <td>
+                    {{if eq .Status "pending"}}
+                        <a href="/moderation/handle/delete/{{.ID}}" class="btn btn-danger btn-sm">Supprimer & Traiter</a>
+                        <a href="/moderation/handle/dismiss/{{.ID}}" class="btn btn-secondary btn-sm">Rejeter</a>
+                        <a href="/moderation/ban/{{.ContentAuthorID}}" class="btn btn-warning btn-sm">Bannir l'auteur</a>
+                    {{else}}
+                        <span class="text-muted">Traité</span>
+                    {{end}}
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{end}}
