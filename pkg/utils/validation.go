@@ -8,37 +8,37 @@ import (
 
 var emailPattern = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
 
-// TrimWhitespace nettoie les espaces inutiles en début et fin de chaîne.
+// TrimWhitespace removes leading and trailing whitespace from a string.
 func TrimWhitespace(value string) string {
 	return strings.TrimSpace(value)
 }
 
-// NormalizeWhitespace nettoie la chaîne et remplace les espaces multiples par un seul espace.
+// NormalizeWhitespace trims the string and replaces multiple spaces with a single space.
 func NormalizeWhitespace(value string) string {
 	return strings.Join(strings.Fields(value), " ")
 }
 
-// ValidateNotEmpty vérifie qu'une valeur de champ n'est pas vide.
+// ValidateNotEmpty checks that a field value is not empty.
 func ValidateNotEmpty(value, fieldName string) string {
 	if TrimWhitespace(value) == "" {
-		return fmt.Sprintf("Le champ %s est obligatoire.", fieldName)
+		return fmt.Sprintf("The %s field is required.", fieldName)
 	}
 	return ""
 }
 
-// ValidateLength vérifie les contraintes minimales et maximales de longueur.
+// ValidateLength checks minimum and maximum length constraints.
 func ValidateLength(value, fieldName string, min, max int) string {
 	length := len(value)
 	if min > 0 && length < min {
-		return fmt.Sprintf("%s doit contenir au moins %d caractères.", fieldName, min)
+		return fmt.Sprintf("%s must be at least %d characters long.", fieldName, min)
 	}
 	if max > 0 && length > max {
-		return fmt.Sprintf("%s ne peut pas dépasser %d caractères.", fieldName, max)
+		return fmt.Sprintf("%s cannot exceed %d characters.", fieldName, max)
 	}
 	return ""
 }
 
-// ValidateEmail vérifie qu'une adresse e-mail est présente et a un format simple valide.
+// ValidateEmail checks that an email address is present and has a simple valid format.
 func ValidateEmail(value, fieldName string) string {
 	if err := ValidateNotEmpty(value, fieldName); err != "" {
 		return err
@@ -47,7 +47,7 @@ func ValidateEmail(value, fieldName string) string {
 		return err
 	}
 	if !emailPattern.MatchString(value) {
-		return fmt.Sprintf("%s doit être une adresse e-mail valide.", fieldName)
+		return fmt.Sprintf("%s must be a valid email address.", fieldName)
 	}
 	return ""
 }

@@ -67,7 +67,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	recentPosts, err := db.GetRecentPosts(5) // On récupère les 5 plus récents
+	recentPosts, err := db.GetRecentPosts(5) // Retrieve the 5 most recent
 	if err != nil {
 		utils.LogError("could not get recent posts", err)
 		serverError(w, r)
@@ -110,7 +110,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("password")
 		utils.Debug("Registering user: " + username)
 
-		// Validation simple
+		// Simple validation
 		if username == "" || email == "" || password == "" {
 			utils.Debug("Validation failed: fields missing")
 			data.Message = "Tous les champs sont requis"
@@ -118,7 +118,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Vérifier si l'utilisateur existe déjà
+		// Check if the user already exists
 		existingUser, err := db.GetUserByUsername(username)
 		if err != nil {
 			utils.LogError("Erreur lors de la vérification de l'utilisateur", err)
@@ -132,7 +132,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Vérifier si l'email est déjà utilisé
+		// Check if the email is already used
 		existingEmailUser, err := db.GetUserByEmail(email)
 		if err != nil {
 			utils.LogError("Erreur lors de la vérification de l'email", err)
@@ -146,7 +146,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Créer l'utilisateur
+		// Create the user
 		err = db.CreateUser(username, password, email)
 		if err != nil {
 			utils.LogError("Erreur lors de la création de l'utilisateur", err)
@@ -155,7 +155,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 		}
 		utils.Debug("User created successfully: " + username)
 
-		// Connecter l'utilisateur
+		// Sign the user in
 		user, err := db.GetUserByUsername(username)
 		if err != nil || user == nil {
 			utils.LogError("Erreur pour retrouver l'utilisateur après création", err)
@@ -342,7 +342,7 @@ func postView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Organiser les commentaires en une structure hiérarchique
+	// Organize comments into a hierarchical structure
 	commentMap := make(map[int]*db.Comment)
 	for i := range comments {
 		commentMap[comments[i].ID] = &comments[i]
