@@ -615,6 +615,19 @@ nav ul {
 }
 .card h3 { color: var(--text-main); }
 
+
+.profile-card {
+    height: auto;
+    display: block;
+    background-color: var(--bg-surface);
+    padding: var(--space-md);
+    border-radius: 0.5rem;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    border-left: 0.25rem solid transparent;
+    color: inherit;
+    text-decoration: none;
+}
+
 .page-grid {
     display: grid;
     grid-template-columns: minmax(220px, 1fr) minmax(360px, 2fr) minmax(260px, 1fr);
@@ -784,6 +797,91 @@ footer {
     .grid { grid-template-columns: 1fr; }
     .page-grid { grid-template-columns: 1fr; }
 }
+
+/* Profile activity cards: ensure they display responsively and override
+   any global .card fixed sizing that could break the layout. */
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: var(--space-md);
+    align-items: start;
+}
+.profile-stats .card {
+    /* remove fixed width/height constraints from the generic .card */
+    min-width: 0;
+    max-width: 100%;
+    min-height: auto;
+    max-height: none;
+    text-align: center;
+    padding: calc(var(--space-md) * 1.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.profile-stats .card h2 {
+    font-size: 2.4rem;
+    color: var(--accent-primary);
+    margin-bottom: var(--space-sm);
+}
+.profile-stats .card p {
+    color: var(--text-muted);
+    margin: 0;
+}
+
+@media (max-width: 48rem) {
+    .profile-stats .card h2 { font-size: 2rem; }
+}
+
+/* Clickable profile cards */
+.card.clickable {
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none; /* ensure button resets */
+    text-align: center;
+}
+.card.clickable:hover {
+    transform: translateY(-0.35rem) scale(1.01);
+    box-shadow: var(--shadow-hover);
+}
+.card.clickable:focus {
+    outline: 3px solid rgba(136,183,187,0.18);
+    outline-offset: 4px;
+}
+
+/* Hidden helper */
+.hidden { display: none !important; }
+
+/* List cards shown when clicking a stat */
+.list-card {
+    background-color: var(--bg-surface);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+.list-card ul {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+.list-card li {
+    padding: calc(var(--space-sm) * 0.8) 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.03);
+}
+.list-card li a {
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 600;
+}
+.list-card li a:hover { color: var(--accent-primary); }
+.list-card p.text-muted { margin: 0; }
+
+/* Constrain list height on small screens and allow scrolling */
+.list-card { max-height: 50vh; overflow: auto; }
+
 
 /* --- Like/Dislike Actions --- */
 .post-actions, .comment-footer {
