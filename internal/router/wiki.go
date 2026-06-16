@@ -54,6 +54,18 @@ func bannedPage(w http.ResponseWriter, r *http.Request) {
 	utils.RenderTemplate(w, "banned.html", data)
 }
 
+func rulesPage(w http.ResponseWriter, r *http.Request) {
+	data := newAuthenticatedPageData(r)
+	data.Title = "Règles du Forum"
+	utils.RenderTemplate(w, "rules.html", data)
+}
+
+func contactPage(w http.ResponseWriter, r *http.Request) {
+	data := newAuthenticatedPageData(r)
+	data.Title = "Nous Contacter"
+	utils.RenderTemplate(w, "contact.html", data)
+}
+
 func home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		notFound(w, r)
