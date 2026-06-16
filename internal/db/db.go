@@ -670,7 +670,8 @@ func CreateReport(report *Report) error {
 func GetAllReports() ([]*Report, error) {
 	query := `
 		SELECT r.id, r.reporter_id, r.content_id, r.content_type, r.reason, r.created_at, u.username, r.status,
-		COALESCE(p.author, pm.user_id) as content_author_id
+		COALESCE(p.author, pm.user_id) as content_author_id,
+		pm.post_id as parent_post_id
 		FROM reports r
 		JOIN users u ON r.reporter_id = u.id
 		LEFT JOIN post p ON r.content_type = 'post' AND r.content_id = p.id
@@ -685,12 +686,18 @@ func GetAllReports() ([]*Report, error) {
 	var reports []*Report
 	for rows.Next() {
 		var report Report
-		var authorID sql.NullInt64 // Use NullInt64 to handle potential NULLs from LEFT JOIN
-		if err := rows.Scan(&report.ID, &report.ReporterID, &report.ContentID, &report.ContentType, &report.Reason, &report.CreatedAt, &report.ReporterName, &report.Status, &authorID); err != nil {
+		var authorID sql.NullInt64     // Use NullInt64 to handle potential NULLs from LEFT JOIN
+		var parentPostID sql.NullInt64 // Handle NULL for posts
+		if err := rows.Scan(&report.ID, &report.ReporterID, &report.ContentID, &report.ContentType, &report.Reason, &report.CreatedAt, &report.ReporterName, &report.Status, &authorID, &parentPostID); err != nil {
 			return nil, fmt.Errorf("could not scan report: %w", err)
 		}
 		if authorID.Valid {
 			report.ContentAuthorID = int(authorID.Int64)
+		}
+		if parentPostID.Valid {
+			report.ParentPostID = int(parentPostID.Int64)
+		} else {
+			report.ParentPostID = report.ContentID // Si c'est un post, le post ID est le contentID lui-même
 		}
 		reports = append(reports, &report)
 	}

@@ -34,6 +34,7 @@ type Report struct {
 	ReporterName    string
 	Status          string
 	ContentAuthorID int
+	ParentPostID    int // ID du post parent (pour les commentaires)
 }
 
 // Session represents a user session in the database.
