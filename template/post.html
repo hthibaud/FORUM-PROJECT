@@ -3,10 +3,9 @@
     <article class="post-full">
         <header class="post-header">
             <div class="post-author-info">
-                <!-- Placeholder pour un avatar -->
-                <div class="avatar-placeholder">
-                    <span></span>
-                </div>
+            <div class="avatar-placeholder">
+                <span>{{.User.Username | initial}}</span>
+            </div>
                 <div>
                     <span class="post-author-name">{{.Post.Author}}</span>
                     <p class="post-meta">
