@@ -68,7 +68,7 @@ var schema = map[string]string{
 		"data_uuid"	TEXT NOT NULL UNIQUE,
 		"timestamp"	DATETIME DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY("id" AUTOINCREMENT),
-		FOREIGN KEY("author") REFERENCES "users"("id"),
+		FOREIGN KEY("user_id") REFERENCES "users"("id"),
 		FOREIGN KEY("category_id") REFERENCES "cat"("id")
 	);`,
 	"post_message": `CREATE TABLE "post_message" (
